@@ -1,0 +1,79 @@
+# Business — Generative Engine Optimization Map
+
+---
+
+## Pages
+
+### Home
+https://example.com
+Discover affordable sports and fitness apparel designed for peak performance. Shop quality athletic wear at prices that make excellence accessible to everyone.
+
+### About
+https://example.com/about
+We&#39;re on a mission to make athletic excellence accessible through scientifically-designed, affordable sports apparel for people who refuse to compromise quality.
+
+### Science & Design
+https://example.com/science
+Explore the innovative technology and research behind our performance-enhancing apparel. Every product is engineered for comfort, durability, and athletic results.
+
+### Contact
+https://example.com/contact
+Ready to upgrade your athletic wardrobe without breaking the bank? Get in touch and discover how we deliver premium performance at accessible prices today.
+
+### Products
+https://example.com/products
+Our Products - Gear up Pro
+
+### Cart
+https://example.com/cart
+Your Cart
+
+### Checkout
+https://example.com/checkout
+Checkout
+
+### Login
+https://example.com/login
+Customer Login
+
+### Account
+https://example.com/account
+My Account
+
+### Order Success
+https://example.com/order-success
+Thank you for your order
+
+### Product Detail
+https://example.com/product/:slug
+Product Details - Gear up Pro
+
+### Category
+https://example.com/category/:slug
+Products - Gear up Pro
+
+## Legal & Policy
+
+### Privacy Policy
+https://example.com/privacy
+Information about how user data is collected, stored, and protected.
+
+### Terms & Conditions
+https://example.com/terms
+Legal terms describing service usage, rights, and policies.
+
+### Accessibility Statement
+https://example.com/accessibility
+Information about WCAG compliance and accessibility features.
+
+---
+
+# Business Context (for LLM understanding)
+
+## About Business
+---
+
+# Additional Resources
+
+- **Sitemap**: https://example.com/sitemap.xml
+- **Robots.txt**: https://example.com/robots.txt
