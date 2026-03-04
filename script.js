@@ -142,6 +142,526 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 ;
+
+
+/* Cookie Consent */
+
+// Helper function to check cookie consent
+function hasConsentFor(category) {
+  if (typeof window.CookieConsent === 'undefined') {
+    return false; // Default to no consent if cookie consent not loaded
+  }
+  
+  return window.CookieConsent.validConsent(category);
+}
+
+// Helper function to execute code only with consent
+function withConsent(category, callback) {
+  if (hasConsentFor(category)) {
+    callback();
+  } else {
+    console.log(`[WARNING] Skipping ${category} code - no user consent`);
+  }
+}
+
+// Cookie Consent Initialization
+
+(function() {
+  'use strict';
+  
+  let initAttempts = 0;
+  const maxAttempts = 50; // 5 seconds max wait
+  
+  // Wait for DOM and vanilla-cookieconsent to be ready
+  function initCookieConsent() {
+    initAttempts++;
+    
+    
+    if (typeof window.CookieConsent === 'undefined') {
+      if (initAttempts < maxAttempts) {
+        setTimeout(initCookieConsent, 100);
+      } else {
+      }
+      return;
+    }
+
+    const cc = window.CookieConsent;
+    
+    
+    // Initialize cookie consent
+    try {
+      cc.run({
+  "autoShow": true,
+  "mode": "opt-in",
+  "revision": 0,
+  "categories": {
+    "necessary": {
+      "enabled": true,
+      "readOnly": true
+    },
+    "analytics": {
+      "enabled": false,
+      "readOnly": false,
+      "autoClear": {
+        "cookies": [
+          {
+            "name": "_ga"
+          },
+          {
+            "name": "_ga_*"
+          },
+          {
+            "name": "_gid"
+          },
+          {
+            "name": "_gat"
+          }
+        ]
+      }
+    },
+    "marketing": {
+      "enabled": false,
+      "readOnly": false,
+      "autoClear": {
+        "cookies": [
+          {
+            "name": "_fbp"
+          },
+          {
+            "name": "_fbc"
+          },
+          {
+            "name": "fr"
+          }
+        ]
+      }
+    }
+  },
+  "language": {
+    "default": "en",
+    "translations": {
+      "en": {
+        "consentModal": {
+          "title": "We use cookies 🍪",
+          "description": "Gear up Pro uses cookies to enhance your experience, analyze site usage, and assist in our marketing efforts. You can manage your preferences anytime.",
+          "acceptAllBtn": "Accept All",
+          "acceptNecessaryBtn": "Accept Necessary",
+          "showPreferencesBtn": "Manage Preferences",
+          "footer": "<a href=\"#privacy-policy\">Privacy Policy</a> | <a href=\"#terms-conditions\">Terms & Conditions</a>"
+        },
+        "preferencesModal": {
+          "title": "Cookie Preferences",
+          "acceptAllBtn": "Accept All",
+          "acceptNecessaryBtn": "Accept Necessary",
+          "savePreferencesBtn": "Save Preferences",
+          "closeIconLabel": "Close",
+          "sections": [
+            {
+              "title": "Essential Cookies",
+              "description": "These cookies are necessary for the website to function and cannot be disabled.",
+              "linkedCategory": "necessary"
+            },
+            {
+              "title": "Analytics Cookies",
+              "description": "These cookies help us understand how visitors interact with our website.",
+              "linkedCategory": "analytics"
+            },
+            {
+              "title": "Marketing Cookies",
+              "description": "These cookies are used to deliver personalized advertisements.",
+              "linkedCategory": "marketing"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "guiOptions": {
+    "consentModal": {
+      "layout": "box",
+      "position": "bottom right",
+      "equalWeightButtons": true,
+      "flipButtons": false
+    },
+    "preferencesModal": {
+      "layout": "box",
+      "equalWeightButtons": true,
+      "flipButtons": false
+    }
+  }
+});
+      
+      // Google Consent Mode v2 integration
+      // Update consent state based on accepted cookie categories
+      function updateGoogleConsentMode() {
+        if (typeof gtag !== 'function') {
+          // Define gtag if not already defined (needed for consent updates)
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function(){dataLayer.push(arguments);};
+        }
+        
+        var analyticsAccepted = cc.acceptedCategory('analytics');
+        var marketingAccepted = cc.acceptedCategory('marketing');
+        
+        gtag('consent', 'update', {
+          'analytics_storage': analyticsAccepted ? 'granted' : 'denied',
+          'ad_storage': marketingAccepted ? 'granted' : 'denied',
+          'ad_user_data': marketingAccepted ? 'granted' : 'denied',
+          'ad_personalization': marketingAccepted ? 'granted' : 'denied'
+        });
+      }
+      
+      // Update consent on initial load (if user previously accepted)
+      updateGoogleConsentMode();
+      
+      // Handle consent changes via onChange callback
+      if (typeof cc.onChange === 'function') {
+        cc.onChange(function(cookie, changed_preferences) {
+          updateGoogleConsentMode();
+        });
+      }
+
+      // Note: Cookie Preferences button removed per marketing guidelines
+      // Footer should be clean and minimal - users can manage cookies via banner
+    } catch (error) {
+    }
+  }
+
+  // Initialize when DOM is ready - multiple approaches for reliability
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCookieConsent);
+    // Backup timeout in case DOMContentLoaded doesn't fire
+    setTimeout(initCookieConsent, 1000);
+  } else if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initCookieConsent();
+  } else {
+    // Fallback - try after a short delay
+    setTimeout(initCookieConsent, 500);
+  }
+  
+  // Additional fallback - try after page load
+  if (typeof window !== 'undefined') {
+    if (window.addEventListener) {
+      window.addEventListener('load', initCookieConsent, { once: true });
+    }
+  }
+})();
+
+/* Accessibility Features */
+
+/* Mickidum Accessibility Toolbar Initialization - Zappy Style */
+
+window.onload = function() {
+    
+    try {
+        window.micAccessTool = new MicAccessTool({
+            buttonPosition: 'left', // Position on left side
+            forceLang: 'en-US', // Force language
+            icon: {
+                position: {
+                    bottom: { size: 50, units: 'px' },
+                    left: { size: 20, units: 'px' },
+                    type: 'fixed'
+                },
+                backgroundColor: 'transparent', // Transparent to allow CSS styling
+                color: 'transparent', // Let CSS handle coloring
+                img: 'accessible',
+                circular: false // Square button for consistent styling
+            },
+            menu: {
+                dimensions: {
+                    width: { size: 300, units: 'px' },
+                    height: { size: 'auto', units: 'px' }
+                }
+            }
+        });
+        
+    } catch (error) {
+    }
+    
+    // Keyboard shortcut handler: ALT+A (Option+A on Mac) to toggle accessibility widget visibility (desktop only)
+    document.addEventListener('keydown', function(event) {
+        // Check if ALT+A is pressed (ALT on Windows/Linux, Option on Mac)
+        var isAltOrOption = event.altKey;
+        // Use event.code for reliable physical key detection (works regardless of Option key character output)
+        var isAKey = event.code === 'KeyA' || event.keyCode === 65 || event.which === 65 || 
+                      (event.key && (event.key.toLowerCase() === 'a' || event.key === 'å' || event.key === 'Å'));
+        
+        if (isAltOrOption && isAKey) {
+            // Only work on desktop (screen width > 768px)
+            if (window.innerWidth > 768) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Toggle visibility class on body
+                var isVisible = document.body.classList.contains('accessibility-widget-visible');
+                
+                if (isVisible) {
+                    // Hide the widget
+                    document.body.classList.remove('accessibility-widget-visible');
+                } else {
+                    // Show the widget
+                    document.body.classList.add('accessibility-widget-visible');
+                    
+                    // After a short delay, click the button to open the menu
+                    setTimeout(function() {
+                        var accessButton = document.getElementById('mic-access-tool-general-button');
+                        if (accessButton) {
+                            accessButton.click();
+                        }
+                    }, 200);
+                }
+            }
+        }
+    }, true);
+};
+
+
+// Zappy Contact Form API Integration (Fallback)
+(function() {
+    if (window.zappyContactFormLoaded) {
+        console.log('📧 Zappy contact form already loaded');
+        return;
+    }
+    window.zappyContactFormLoaded = true;
+
+    function zappyNotify(message, type) {
+        var existing = document.querySelectorAll('.zappy-notification');
+        existing.forEach(function(el) { el.remove(); });
+        var el = document.createElement('div');
+        el.className = 'zappy-notification';
+        var bg = type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1';
+        var fg = type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460';
+        var border = type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#bee5eb';
+        var icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        el.style.cssText = 'position:fixed;top:20px;right:20px;max-width:400px;padding:16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:10000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.4;animation:slideInRight .3s ease-out;background:' + bg + ';color:' + fg + ';border:1px solid ' + border;
+        el.innerHTML = '<span style="margin-right:8px">' + icon + '</span>' + message + '<button onclick="this.parentElement.remove()" style="background:none;border:none;font-size:18px;cursor:pointer;float:right;opacity:.7;padding:0 0 0 12px">&times;</button>';
+        if (!document.getElementById('zappy-notify-anim')) {
+            var s = document.createElement('style');
+            s.id = 'zappy-notify-anim';
+            s.textContent = '@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
+            document.head.appendChild(s);
+        }
+        document.body.appendChild(el);
+        setTimeout(function() { if (el.parentElement) el.remove(); }, type === 'error' ? 8000 : 5000);
+    }
+
+    function initContactFormIntegration() {
+        console.log('📧 Zappy: Initializing contact form API integration...');
+
+        var contactForm = document.querySelector('.contact-form') || 
+                           document.querySelector('form[action*="contact"]') ||
+                           document.querySelector('form#contact') ||
+                           document.querySelector('form#contactForm') ||
+                           document.getElementById('contactForm') ||
+                           document.querySelector('section.contact form') ||
+                           document.querySelector('section#contact form') ||
+                           document.querySelector('form');
+        
+        if (!contactForm) {
+            console.log('⚠️ Zappy: No contact form found on page');
+            return;
+        }
+        
+        console.log('✅ Zappy: Contact form found:', contactForm.className || contactForm.id || 'unnamed form');
+
+    contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+        var data = Object.fromEntries(formData);
+
+        // Loading state
+        var submitBtn = this.querySelector('button[type="submit"], input[type="submit"]');
+        var originalText = submitBtn ? (submitBtn.value || submitBtn.textContent) : '';
+        if (submitBtn) {
+            if (submitBtn.tagName === 'INPUT') submitBtn.value = 'Sending...';
+            else submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+        }
+
+        var currentPagePath = window.location.pathname;
+        if (window.ZAPPY_CONFIG && window.ZAPPY_CONFIG.currentPagePath) {
+            currentPagePath = window.ZAPPY_CONFIG.currentPagePath;
+        } else {
+            try {
+                var p = new URLSearchParams(window.location.search).get('page');
+                if (p) currentPagePath = p;
+            } catch (ignored) {}
+        }
+
+        var theForm = this;
+        try {
+            console.log('📧 Zappy: Sending contact form to backend API...');
+            var apiBase = (window.ZAPPY_API_BASE || 'https://api.zappy5.com').replace(/\/$/, '');
+            var response = await fetch(apiBase + '/api/email/contact-form', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    websiteId: 'fe3d25ec-4bf6-4de5-a543-19e608c968e5',
+                    name: data.name || '',
+                    email: data.email || '',
+                    subject: data.subject || 'Contact Form Submission',
+                    message: data.message || '',
+                    phone: data.phone || null,
+                    currentPagePath: currentPagePath
+                })
+            });
+
+            var result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Zappy: Contact form data sent successfully to backend');
+
+                // Thank-you page redirect
+                if (result.thankYouPagePath && result.ticketNumber) {
+                    var ticketParam = 'ticket=' + encodeURIComponent(result.ticketNumber);
+                    var isPreview = window.location.pathname.indexOf('/preview') !== -1;
+                    var thankYouUrl;
+                    if (isPreview && window.ZAPPY_CONFIG) {
+                        var wid = window.ZAPPY_CONFIG.websiteId || 'fe3d25ec-4bf6-4de5-a543-19e608c968e5';
+                        var pt = window.location.pathname.indexOf('fullscreen') !== -1 ? 'preview-fullscreen' : 'preview';
+                        thankYouUrl = window.location.origin + '/api/website/' + pt + '/' + wid + '?page=' + encodeURIComponent(result.thankYouPagePath) + '&' + ticketParam;
+                        if (window.ZAPPY_CONFIG.authToken) thankYouUrl += '&auth_token=' + encodeURIComponent(window.ZAPPY_CONFIG.authToken);
+                    } else {
+                        thankYouUrl = result.thankYouPagePath + '?' + ticketParam;
+                    }
+                    window.location.href = thankYouUrl;
+                    return;
+                }
+
+                zappyNotify(result.message || 'Thank you for your message! We\'ll get back to you soon.', 'success');
+                theForm.reset();
+            } else {
+                console.log('⚠️ Zappy: Backend returned error:', result.error);
+                zappyNotify(result.error || 'Failed to send message. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('❌ Zappy: Failed to send to backend API:', error);
+            zappyNotify('Unable to send message right now. Please try again later.', 'error');
+        } finally {
+            if (submitBtn) {
+                if (submitBtn.tagName === 'INPUT') submitBtn.value = originalText;
+                else submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+        }, true);
+
+        console.log('✅ Zappy: Contact form API integration initialized');
+    } // End of initContactFormIntegration
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initContactFormIntegration);
+    } else {
+        initContactFormIntegration();
+    }
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;(function(){
+  function _zappyHeroPullUpRetry(){
+    var nb=document.querySelector('nav.navbar,.navbar:not(.zappy-catalog-menu)');
+    if(!nb)return;
+    var navBg=getComputedStyle(document.documentElement).getPropertyValue('--nav-bg').trim();
+    if(navBg&&navBg!=='transparent')return;
+    var totalH=parseInt(getComputedStyle(document.body).paddingTop)||0;
+    if(!totalH)return;
+    var hero=document.querySelector('section[class*="hero"],[data-hero-type],main>section:first-child');
+    if(hero){
+      var curMt=parseInt(getComputedStyle(hero).marginTop)||0;
+      if(curMt>=-10){
+        hero.style.setProperty('margin-top','-'+totalH+'px','important');
+        hero.style.setProperty('padding-top',totalH+'px','important');
+      }
+    }
+  }
+  function _zappyMenuContrastFix(){
+    if(window.innerWidth>768)return;
+    var menuBg='#0E0F12';var menuText='#F2F4F7';
+    var nm=document.querySelector('.nav-menu,#navMenu');
+    if(!nm)return;
+    nm.style.setProperty('background-color',menuBg,'important');
+    var links=nm.querySelectorAll('a');
+    for(var i=0;i<links.length;i++){links[i].style.setProperty('color',menuText,'important');}
+    var tog=nm.querySelector('.mobile-submenu-toggle');
+    if(tog)tog.style.setProperty('color',menuText,'important');
+    var obs=new MutationObserver(function(){
+      if(window.innerWidth>768)return;
+      nm.style.setProperty('background-color',menuBg,'important');
+      var ls=nm.querySelectorAll('a');for(var i=0;i<ls.length;i++){ls[i].style.setProperty('color',menuText,'important');}
+    });
+    obs.observe(nm,{attributes:true,attributeFilter:['class']});
+  }
+  function _run(){_zappyHeroPullUpRetry();_zappyMenuContrastFix();}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(_run,800);});}
+  else{setTimeout(_run,800);}
+})();
+;(function(){if(window.innerWidth<=768)return;var ir=document.querySelector('.nav-icons-right,.nav-ecommerce-icons.nav-icons-right');if(ir)ir.style.setProperty('inset-inline-start','52px','important');})();
+
+;(function(){
+  function _zappyNonHeroFix(){
+    var nb=document.querySelector('nav.navbar,.navbar:not(.zappy-catalog-menu)');
+    if(!nb)return;
+    var navBg=getComputedStyle(document.documentElement).getPropertyValue('--nav-bg').trim();
+    if(navBg&&navBg!=='transparent')return;
+    var heroEl=document.querySelector('section[class*="hero"],[data-hero-type]');
+    var hasDH=false;
+    if(heroEl){
+      var hCs=getComputedStyle(heroEl);
+      if(hCs.backgroundImage!=='none'||heroEl.querySelector('[class*="scrim"],[class*="overlay"]')){hasDH=true;}
+      else{var hM=hCs.backgroundColor.match(/\d+/g);if(hM){var hL=0.2126*parseInt(hM[0])/255+0.7152*parseInt(hM[1])/255+0.0722*parseInt(hM[2])/255;if(hL<0.4)hasDH=true;}}
+    }
+    if(hasDH)return;
+    var bodyBg=getComputedStyle(document.body).backgroundColor||'rgb(255,255,255)';
+    var bm=bodyBg.match(/\d+/g);
+    var r=bm?parseInt(bm[0]):255,g=bm?parseInt(bm[1]):255,b=bm?parseInt(bm[2]):255;
+    var fb='rgba('+r+','+g+','+b+',0.85)';
+    var sR=r/255,sG=g/255,sB=b/255;
+    sR=sR<=0.03928?sR/12.92:Math.pow((sR+0.055)/1.055,2.4);
+    sG=sG<=0.03928?sG/12.92:Math.pow((sG+0.055)/1.055,2.4);
+    sB=sB<=0.03928?sB/12.92:Math.pow((sB+0.055)/1.055,2.4);
+    var lum=0.2126*sR+0.7152*sG+0.0722*sB;
+    var rs=getComputedStyle(document.documentElement);
+    var tc=(lum>0.4)?(rs.getPropertyValue('--text-dark').trim()||'#1a1a1a'):(rs.getPropertyValue('--text-light').trim()||'#ffffff');
+    nb.classList.add('scrolled');
+    nb.style.setProperty('--frosted-text',tc);
+    nb.style.backdropFilter='blur(12px)';nb.style.webkitBackdropFilter='blur(12px)';
+    nb.style.boxShadow='0 2px 16px rgba(0,0,0,0.12)';
+    if(window.innerWidth>768){nb.style.setProperty('background-color',fb,'important');}
+    var cm=document.querySelector('.zappy-catalog-menu');
+    if(cm){cm.classList.add('scrolled');cm.style.setProperty('background-color',fb,'important');cm.style.backdropFilter='blur(12px)';cm.style.webkitBackdropFilter='blur(12px)';}
+    window.addEventListener('scroll',function(){nb.classList.add('scrolled');if(window.innerWidth>768){nb.style.setProperty('background-color',fb,'important');}},{passive:true});
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(_zappyNonHeroFix,600);});}
+  else{setTimeout(_zappyNonHeroFix,600);}
+})();
+;
 /* ==ZAPPY E-COMMERCE JS START== */
 // E-commerce functionality
 (function() {
@@ -223,6 +743,19 @@ document.addEventListener('DOMContentLoaded', function() {
       document.documentElement.style.setProperty('--header-height', headerHeight + 'px');
       document.documentElement.style.setProperty('--total-header-height', totalHeight + 'px');
       document.body.style.setProperty('padding-top', totalHeight + 'px', 'important');
+
+      // When the navbar is transparent, the hero must extend BEHIND the fixed
+      // navbar+catalog so the dark hero image shows through — otherwise the
+      // transparent navbar reveals the light body background (#bg-light).
+      var navBgValue = getComputedStyle(document.documentElement).getPropertyValue('--nav-bg').trim();
+      var isTransparentNav = !navBgValue || navBgValue === 'transparent';
+      if (isTransparentNav) {
+        var heroSection = document.querySelector('section[class*="hero"], [data-hero-type], main > section:first-child');
+        if (heroSection) {
+          heroSection.style.setProperty('margin-top', '-' + totalHeight + 'px', 'important');
+          heroSection.style.setProperty('padding-top', totalHeight + 'px', 'important');
+        }
+      }
     } else if (announcementBarHeight > 0) {
       document.body.style.setProperty('padding-top', announcementBarHeight + 'px', 'important');
     }
@@ -255,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!websiteId) return;
   
   // Translations
-  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","apartment":"Apt, Floor, Unit","city":"City","zip":"ZIP Code","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
+  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","streetAndNumber":"Street and Number","apartment":"Apt, Floor, Unit","apartmentExt":"Apt, Floor, Building Code, Notes, Etc.","city":"City","zip":"ZIP Code","zipPostal":"Zip / Postal Code","countryRegion":"Country / Region","stateProvince":"State / Province","stateRequired":"Please select a state / province","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","signInHere":"Sign in here","mobileNumber":"Mobile Number","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
   
   // Helper to get localized e-commerce UI text
   // Tries zappyI18n first for multilingual support, falls back to static t object
@@ -309,6 +842,7 @@ function stripHtmlToText(html) {
   let currentSortKey = 'popularity';
   let currentViewMode = localStorage.getItem('zappy_view_mode_' + websiteId) || 'grid';
   let activeSidebarFilters = { categories: [], brands: [], tags: [], priceMin: null, priceMax: null, sale: false };
+  let storeCountry = null;
   
   // Fetch store settings (including tax rate and product layout) from API
   async function fetchStoreSettings() {
@@ -332,6 +866,9 @@ function stripHtmlToText(html) {
         if (data.data.viewToggleEnabled != null) {
           viewToggleEnabled = data.data.viewToggleEnabled;
         }
+        if (data.data.country) {
+          storeCountry = data.data.country;
+        }
         storeSettingsFetched = true;
       }
     } catch (e) {
@@ -341,6 +878,64 @@ function stripHtmlToText(html) {
   
   // Fetch settings on page load
   fetchStoreSettings();
+  
+  
+  var ZAPPY_STATE_MAP = {"US":[["AL","Alabama"],["AK","Alaska"],["AS","American Samoa"],["AZ","Arizona"],["AR","Arkansas"],["UM-81","Baker Island"],["CA","California"],["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["DC","District of Columbia"],["FL","Florida"],["GA","Georgia"],["GU","Guam"],["HI","Hawaii"],["UM-84","Howland Island"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],["UM-86","Jarvis Island"],["UM-67","Johnston Atoll"],["KS","Kansas"],["KY","Kentucky"],["UM-89","Kingman Reef"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],["MI","Michigan"],["UM-71","Midway Atoll"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["UM-76","Navassa Island"],["NE","Nebraska"],["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],["NC","North Carolina"],["ND","North Dakota"],["MP","Northern Mariana Islands"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],["UM-95","Palmyra Atoll"],["PA","Pennsylvania"],["PR","Puerto Rico"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],["TN","Tennessee"],["TX","Texas"],["UM","United States Minor Outlying Islands"],["VI","United States Virgin Islands"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],["UM-79","Wake Island"],["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"]],"CA":[["AB","Alberta"],["BC","British Columbia"],["MB","Manitoba"],["NB","New Brunswick"],["NL","Newfoundland and Labrador"],["NT","Northwest Territories"],["NS","Nova Scotia"],["NU","Nunavut"],["ON","Ontario"],["PE","Prince Edward Island"],["QC","Quebec"],["SK","Saskatchewan"],["YT","Yukon"]],"AU":[["ACT","Australian Capital Territory"],["NSW","New South Wales"],["NT","Northern Territory"],["QLD","Queensland"],["SA","South Australia"],["TAS","Tasmania"],["VIC","Victoria"],["WA","Western Australia"]],"IN":[["AN","Andaman and Nicobar Islands"],["AP","Andhra Pradesh"],["AR","Arunachal Pradesh"],["AS","Assam"],["BR","Bihar"],["CH","Chandigarh"],["CT","Chhattisgarh"],["DH","Dadra and Nagar Haveli and Daman and Diu"],["DL","Delhi"],["GA","Goa"],["GJ","Gujarat"],["HR","Haryana"],["HP","Himachal Pradesh"],["JK","Jammu and Kashmir"],["JH","Jharkhand"],["KA","Karnataka"],["KL","Kerala"],["LA","Ladakh"],["LD","Lakshadweep"],["MP","Madhya Pradesh"],["MH","Maharashtra"],["MN","Manipur"],["ML","Meghalaya"],["MZ","Mizoram"],["NL","Nagaland"],["OR","Odisha"],["PY","Puducherry"],["PB","Punjab"],["RJ","Rajasthan"],["SK","Sikkim"],["TN","Tamil Nadu"],["TG","Telangana"],["TR","Tripura"],["UP","Uttar Pradesh"],["UT","Uttarakhand"],["WB","West Bengal"]],"BR":[["AC","Acre"],["AL","Alagoas"],["AP","Amapá"],["AM","Amazonas"],["BA","Bahia"],["CE","Ceará"],["DF","Distrito Federal"],["ES","Espírito Santo"],["GO","Goiás"],["MA","Maranhão"],["MT","Mato Grosso"],["MS","Mato Grosso do Sul"],["MG","Minas Gerais"],["PR","Paraná"],["PB","Paraíba"],["PA","Pará"],["PE","Pernambuco"],["PI","Piauí"],["RN","Rio Grande do Norte"],["RS","Rio Grande do Sul"],["RJ","Rio de Janeiro"],["RO","Rondônia"],["RR","Roraima"],["SC","Santa Catarina"],["SE","Sergipe"],["SP","São Paulo"],["TO","Tocantins"]],"MX":[["AGU","Aguascalientes"],["BCN","Baja California"],["BCS","Baja California Sur"],["CAM","Campeche"],["CHP","Chiapas"],["CHH","Chihuahua"],["CDMX","Ciudad de México"],["COA","Coahuila de Zaragoza"],["COL","Colima"],["DUR","Durango"],["MEX","Estado de México"],["GUA","Guanajuato"],["GRO","Guerrero"],["HID","Hidalgo"],["JAL","Jalisco"],["MIC","Michoacán de Ocampo"],["MOR","Morelos"],["NAY","Nayarit"],["NLE","Nuevo León"],["OAX","Oaxaca"],["PUE","Puebla"],["QUE","Querétaro"],["ROO","Quintana Roo"],["SLP","San Luis Potosí"],["SIN","Sinaloa"],["SON","Sonora"],["TAB","Tabasco"],["TAM","Tamaulipas"],["TLA","Tlaxcala"],["VER","Veracruz de Ignacio de la Llave"],["YUC","Yucatán"],["ZAC","Zacatecas"]],"CN":[["AH","Anhui"],["BJ","Beijing"],["CQ","Chongqing"],["FJ","Fujian"],["GS","Gansu"],["GD","Guangdong"],["GX","Guangxi Zhuang"],["GZ","Guizhou"],["HI","Hainan"],["HE","Hebei"],["HL","Heilongjiang"],["HA","Henan"],["HK","Hong Kong SAR"],["HB","Hubei"],["HN","Hunan"],["NM","Inner Mongolia"],["JS","Jiangsu"],["JX","Jiangxi"],["JL","Jilin"],["LN","Liaoning"],["MO","Macau SAR"],["NX","Ningxia Huizu"],["QH","Qinghai"],["SN","Shaanxi"],["SD","Shandong"],["SH","Shanghai"],["SX","Shanxi"],["SC","Sichuan"],["TW","Taiwan"],["TJ","Tianjin"],["XJ","Xinjiang"],["XZ","Xizang"],["YN","Yunnan"],["ZJ","Zhejiang"]],"JP":[["23","Aichi Prefecture"],["05","Akita Prefecture"],["02","Aomori Prefecture"],["12","Chiba Prefecture"],["38","Ehime Prefecture"],["18","Fukui Prefecture"],["40","Fukuoka Prefecture"],["07","Fukushima Prefecture"],["21","Gifu Prefecture"],["10","Gunma Prefecture"],["34","Hiroshima Prefecture"],["01","Hokkaidō Prefecture"],["28","Hyōgo Prefecture"],["08","Ibaraki Prefecture"],["17","Ishikawa Prefecture"],["03","Iwate Prefecture"],["37","Kagawa Prefecture"],["46","Kagoshima Prefecture"],["14","Kanagawa Prefecture"],["43","Kumamoto Prefecture"],["26","Kyōto Prefecture"],["39","Kōchi Prefecture"],["24","Mie Prefecture"],["04","Miyagi Prefecture"],["45","Miyazaki Prefecture"],["20","Nagano Prefecture"],["42","Nagasaki Prefecture"],["29","Nara Prefecture"],["15","Niigata Prefecture"],["33","Okayama Prefecture"],["47","Okinawa Prefecture"],["41","Saga Prefecture"],["11","Saitama Prefecture"],["25","Shiga Prefecture"],["32","Shimane Prefecture"],["22","Shizuoka Prefecture"],["09","Tochigi Prefecture"],["36","Tokushima Prefecture"],["13","Tokyo"],["31","Tottori Prefecture"],["16","Toyama Prefecture"],["30","Wakayama Prefecture"],["06","Yamagata Prefecture"],["35","Yamaguchi Prefecture"],["19","Yamanashi Prefecture"],["44","Ōita Prefecture"],["27","Ōsaka Prefecture"]],"ID":[["AC","Aceh"],["BA","Bali"],["BT","Banten"],["BE","Bengkulu"],["YO","DI Yogyakarta"],["JK","DKI Jakarta"],["GO","Gorontalo"],["JA","Jambi"],["JB","Jawa Barat"],["JT","Jawa Tengah"],["JI","Jawa Timur"],["KA","Kalimantan Barat"],["KS","Kalimantan Selatan"],["KT","Kalimantan Tengah"],["KI","Kalimantan Timur"],["KU","Kalimantan Utara"],["BB","Kepulauan Bangka Belitung"],["KR","Kepulauan Riau"],["LA","Lampung"],["MA","Maluku"],["MU","Maluku Utara"],["NB","Nusa Tenggara Barat"],["NT","Nusa Tenggara Timur"],["PA","Papua"],["PB","Papua Barat"],["RI","Riau"],["SR","Sulawesi Barat"],["SN","Sulawesi Selatan"],["ST","Sulawesi Tengah"],["SG","Sulawesi Tenggara"],["SA","Sulawesi Utara"],["SB","Sumatera Barat"],["SS","Sumatera Selatan"],["SU","Sumatera Utara"]],"MY":[["01","Johor"],["02","Kedah"],["03","Kelantan"],["14","Kuala Lumpur"],["15","Labuan"],["04","Malacca"],["05","Negeri Sembilan"],["06","Pahang"],["07","Penang"],["08","Perak"],["09","Perlis"],["16","Putrajaya"],["12","Sabah"],["13","Sarawak"],["10","Selangor"],["11","Terengganu"]],"NG":[["AB","Abia"],["FC","Abuja Federal Capital Territory"],["AD","Adamawa"],["AK","Akwa Ibom"],["AN","Anambra"],["BA","Bauchi"],["BY","Bayelsa"],["BE","Benue"],["BO","Borno"],["CR","Cross River"],["DE","Delta"],["EB","Ebonyi"],["ED","Edo"],["EK","Ekiti"],["EN","Enugu"],["GO","Gombe"],["IM","Imo"],["JI","Jigawa"],["KD","Kaduna"],["KN","Kano"],["KT","Katsina"],["KE","Kebbi"],["KO","Kogi"],["KW","Kwara"],["LA","Lagos"],["NA","Nasarawa"],["NI","Niger"],["OG","Ogun"],["ON","Ondo"],["OS","Osun"],["OY","Oyo"],["PL","Plateau"],["RI","Rivers"],["SO","Sokoto"],["TA","Taraba"],["YO","Yobe"],["ZA","Zamfara"]],"PH":[["ABR","Abra"],["AGN","Agusan del Norte"],["AGS","Agusan del Sur"],["AKL","Aklan"],["ALB","Albay"],["ANT","Antique"],["APA","Apayao"],["AUR","Aurora"],["14","Autonomous Region in Muslim Mindanao"],["BAS","Basilan"],["BAN","Bataan"],["BTN","Batanes"],["BTG","Batangas"],["BEN","Benguet"],["05","Bicol Region"],["BIL","Biliran"],["BOH","Bohol"],["BUK","Bukidnon"],["BUL","Bulacan"],["CAG","Cagayan"],["02","Cagayan Valley"],["40","Calabarzon"],["CAN","Camarines Norte"],["CAS","Camarines Sur"],["CAM","Camiguin"],["CAP","Capiz"],["13","Caraga"],["CAT","Catanduanes"],["CAV","Cavite"],["CEB","Cebu"],["03","Central Luzon"],["07","Central Visayas"],["COM","Compostela Valley"],["15","Cordillera Administrative Region"],["NCO","Cotabato"],["DVO","Davao Occidental"],["DAO","Davao Oriental"],["11","Davao Region"],["DAV","Davao del Norte"],["DAS","Davao del Sur"],["DIN","Dinagat Islands"],["EAS","Eastern Samar"],["08","Eastern Visayas"],["GUI","Guimaras"],["IFU","Ifugao"],["ILN","Ilocos Norte"],["01","Ilocos Region"],["ILS","Ilocos Sur"],["ILI","Iloilo"],["ISA","Isabela"],["KAL","Kalinga"],["LUN","La Union"],["LAG","Laguna"],["LAN","Lanao del Norte"],["LAS","Lanao del Sur"],["LEY","Leyte"],["MAG","Maguindanao"],["MAD","Marinduque"],["MAS","Masbate"],["NCR","Metro Manila"],["41","Mimaropa"],["MSC","Misamis Occidental"],["MSR","Misamis Oriental"],["MOU","Mountain Province"],["NEC","Negros Occidental"],["NER","Negros Oriental"],["10","Northern Mindanao"],["NSA","Northern Samar"],["NUE","Nueva Ecija"],["NUV","Nueva Vizcaya"],["MDC","Occidental Mindoro"],["MDR","Oriental Mindoro"],["PLW","Palawan"],["PAM","Pampanga"],["PAN","Pangasinan"],["QUE","Quezon"],["QUI","Quirino"],["RIZ","Rizal"],["ROM","Romblon"],["SAR","Sarangani"],["SIG","Siquijor"],["12","Soccsksargen"],["SOR","Sorsogon"],["SCO","South Cotabato"],["SLE","Southern Leyte"],["SUK","Sultan Kudarat"],["SLU","Sulu"],["SUN","Surigao del Norte"],["SUR","Surigao del Sur"],["TAR","Tarlac"],["TAW","Tawi-Tawi"],["06","Western Visayas"],["ZMB","Zambales"],["09","Zamboanga Peninsula"],["ZSI","Zamboanga Sibugay"],["ZAN","Zamboanga del Norte"],["ZAS","Zamboanga del Sur"]],"TH":[["37","Amnat Charoen"],["15","Ang Thong"],["10","Bangkok"],["38","Bueng Kan"],["31","Buri Ram"],["24","Chachoengsao"],["18","Chai Nat"],["36","Chaiyaphum"],["22","Chanthaburi"],["50","Chiang Mai"],["57","Chiang Rai"],["20","Chon Buri"],["86","Chumphon"],["46","Kalasin"],["62","Kamphaeng Phet"],["71","Kanchanaburi"],["40","Khon Kaen"],["81","Krabi"],["52","Lampang"],["51","Lamphun"],["42","Loei"],["16","Lop Buri"],["58","Mae Hong Son"],["44","Maha Sarakham"],["49","Mukdahan"],["26","Nakhon Nayok"],["73","Nakhon Pathom"],["48","Nakhon Phanom"],["30","Nakhon Ratchasima"],["60","Nakhon Sawan"],["80","Nakhon Si Thammarat"],["55","Nan"],["96","Narathiwat"],["39","Nong Bua Lam Phu"],["43","Nong Khai"],["12","Nonthaburi"],["13","Pathum Thani"],["94","Pattani"],["S","Pattaya"],["82","Phangnga"],["93","Phatthalung"],["56","Phayao"],["67","Phetchabun"],["76","Phetchaburi"],["66","Phichit"],["65","Phitsanulok"],["14","Phra Nakhon Si Ayutthaya"],["54","Phrae"],["83","Phuket"],["25","Prachin Buri"],["77","Prachuap Khiri Khan"],["85","Ranong"],["70","Ratchaburi"],["21","Rayong"],["45","Roi Et"],["27","Sa Kaeo"],["47","Sakon Nakhon"],["11","Samut Prakan"],["74","Samut Sakhon"],["75","Samut Songkhram"],["19","Saraburi"],["91","Satun"],["33","Si Sa Ket"],["17","Sing Buri"],["90","Songkhla"],["64","Sukhothai"],["72","Suphan Buri"],["84","Surat Thani"],["32","Surin"],["63","Tak"],["92","Trang"],["23","Trat"],["34","Ubon Ratchathani"],["41","Udon Thani"],["61","Uthai Thani"],["53","Uttaradit"],["95","Yala"],["35","Yasothon"]],"DE":[["BW","Baden-Württemberg"],["BY","Bavaria"],["BE","Berlin"],["BB","Brandenburg"],["HB","Bremen"],["HH","Hamburg"],["HE","Hesse"],["NI","Lower Saxony"],["MV","Mecklenburg-Vorpommern"],["NW","North Rhine-Westphalia"],["RP","Rhineland-Palatinate"],["SL","Saarland"],["SN","Saxony"],["ST","Saxony-Anhalt"],["SH","Schleswig-Holstein"],["TH","Thuringia"]],"IT":[["65","Abruzzo"],["23","Aosta Valley"],["75","Apulia"],["77","Basilicata"],["BN","Benevento Province"],["78","Calabria"],["72","Campania"],["45","Emilia-Romagna"],["36","Friuli–Venezia Giulia"],["62","Lazio"],["AG","Libero consorzio comunale di Agrigento"],["CL","Libero consorzio comunale di Caltanissetta"],["EN","Libero consorzio comunale di Enna"],["RG","Libero consorzio comunale di Ragusa"],["SR","Libero consorzio comunale di Siracusa"],["TP","Libero consorzio comunale di Trapani"],["42","Liguria"],["25","Lombardy"],["57","Marche"],["BA","Metropolitan City of Bari"],["BO","Metropolitan City of Bologna"],["CA","Metropolitan City of Cagliari"],["CT","Metropolitan City of Catania"],["FI","Metropolitan City of Florence"],["GE","Metropolitan City of Genoa"],["ME","Metropolitan City of Messina"],["MI","Metropolitan City of Milan"],["NA","Metropolitan City of Naples"],["PA","Metropolitan City of Palermo"],["RC","Metropolitan City of Reggio Calabria"],["RM","Metropolitan City of Rome"],["TO","Metropolitan City of Turin"],["VE","Metropolitan City of Venice"],["67","Molise"],["PU","Pesaro and Urbino Province"],["21","Piedmont"],["AL","Province of Alessandria"],["AN","Province of Ancona"],["AP","Province of Ascoli Piceno"],["AT","Province of Asti"],["AV","Province of Avellino"],["BT","Province of Barletta-Andria-Trani"],["BL","Province of Belluno"],["BG","Province of Bergamo"],["BI","Province of Biella"],["BS","Province of Brescia"],["BR","Province of Brindisi"],["CB","Province of Campobasso"],["CI","Province of Carbonia-Iglesias"],["CE","Province of Caserta"],["CZ","Province of Catanzaro"],["CH","Province of Chieti"],["CO","Province of Como"],["CS","Province of Cosenza"],["CR","Province of Cremona"],["KR","Province of Crotone"],["CN","Province of Cuneo"],["FM","Province of Fermo"],["FE","Province of Ferrara"],["FG","Province of Foggia"],["FC","Province of Forlì-Cesena"],["FR","Province of Frosinone"],["GO","Province of Gorizia"],["GR","Province of Grosseto"],["IM","Province of Imperia"],["IS","Province of Isernia"],["AQ","Province of L'Aquila"],["SP","Province of La Spezia"],["LT","Province of Latina"],["LE","Province of Lecce"],["LC","Province of Lecco"],["LI","Province of Livorno"],["LO","Province of Lodi"],["LU","Province of Lucca"],["MC","Province of Macerata"],["MN","Province of Mantua"],["MS","Province of Massa and Carrara"],["MT","Province of Matera"],["VS","Province of Medio Campidano"],["MO","Province of Modena"],["MB","Province of Monza and Brianza"],["NO","Province of Novara"],["NU","Province of Nuoro"],["OG","Province of Ogliastra"],["OT","Province of Olbia-Tempio"],["OR","Province of Oristano"],["PD","Province of Padua"],["PR","Province of Parma"],["PV","Province of Pavia"],["PG","Province of Perugia"],["PE","Province of Pescara"],["PC","Province of Piacenza"],["PI","Province of Pisa"],["PT","Province of Pistoia"],["PN","Province of Pordenone"],["PZ","Province of Potenza"],["PO","Province of Prato"],["RA","Province of Ravenna"],["RE","Province of Reggio Emilia"],["RI","Province of Rieti"],["RN","Province of Rimini"],["RO","Province of Rovigo"],["SA","Province of Salerno"],["SS","Province of Sassari"],["SV","Province of Savona"],["SI","Province of Siena"],["SO","Province of Sondrio"],["TA","Province of Taranto"],["TE","Province of Teramo"],["TR","Province of Terni"],["TV","Province of Treviso"],["TS","Province of Trieste"],["UD","Province of Udine"],["VA","Province of Varese"],["VB","Province of Verbano-Cusio-Ossola"],["VC","Province of Vercelli"],["VR","Province of Verona"],["VV","Province of Vibo Valentia"],["VI","Province of Vicenza"],["VT","Province of Viterbo"],["88","Sardinia"],["82","Sicily"],["BZ","South Tyrol"],["TN","Trentino"],["32","Trentino-South Tyrol"],["52","Tuscany"],["55","Umbria"],["34","Veneto"]],"ES":[["AN","Andalusia"],["AR","Aragon"],["AS","Asturias"],["PM","Balearic Islands"],["PV","Basque Country"],["BU","Burgos Province"],["CN","Canary Islands"],["CB","Cantabria"],["CL","Castile and León"],["CM","Castilla La Mancha"],["CT","Catalonia"],["CE","Ceuta"],["EX","Extremadura"],["GA","Galicia"],["RI","La Rioja"],["LE","Léon"],["MD","Madrid"],["ML","Melilla"],["MC","Murcia"],["NC","Navarra"],["P","Palencia Province"],["SA","Salamanca Province"],["SG","Segovia Province"],["SO","Soria Province"],["VC","Valencia"],["VA","Valladolid Province"],["ZA","Zamora Province"],["AV","Ávila"]],"AR":[["B","Buenos Aires"],["K","Catamarca"],["H","Chaco"],["U","Chubut"],["C","Ciudad Autónoma de Buenos Aires"],["W","Corrientes"],["X","Córdoba"],["E","Entre Ríos"],["P","Formosa"],["Y","Jujuy"],["L","La Pampa"],["F","La Rioja"],["M","Mendoza"],["N","Misiones"],["Q","Neuquén"],["R","Río Negro"],["A","Salta"],["J","San Juan"],["D","San Luis"],["Z","Santa Cruz"],["S","Santa Fe"],["G","Santiago del Estero"],["V","Tierra del Fuego"],["T","Tucumán"]],"CL":[["AI","Aisén del General Carlos Ibañez del Campo"],["AN","Antofagasta"],["AP","Arica y Parinacota"],["AT","Atacama"],["BI","Biobío"],["CO","Coquimbo"],["AR","La Araucanía"],["LI","Libertador General Bernardo O'Higgins"],["LL","Los Lagos"],["LR","Los Ríos"],["MA","Magallanes y de la Antártica Chilena"],["ML","Maule"],["RM","Región Metropolitana de Santiago"],["TA","Tarapacá"],["VS","Valparaíso"],["NB","Ñuble"]],"CO":[["AMA","Amazonas"],["ANT","Antioquia"],["ARA","Arauca"],["SAP","Archipiélago de San Andrés, Providencia y Santa Catalina"],["ATL","Atlántico"],["DC","Bogotá D.C."],["BOL","Bolívar"],["BOY","Boyacá"],["CAL","Caldas"],["CAQ","Caquetá"],["CAS","Casanare"],["CAU","Cauca"],["CES","Cesar"],["CHO","Chocó"],["CUN","Cundinamarca"],["COR","Córdoba"],["GUA","Guainía"],["GUV","Guaviare"],["HUI","Huila"],["LAG","La Guajira"],["MAG","Magdalena"],["MET","Meta"],["NAR","Nariño"],["NSA","Norte de Santander"],["PUT","Putumayo"],["QUI","Quindío"],["RIS","Risaralda"],["SAN","Santander"],["SUC","Sucre"],["TOL","Tolima"],["VAC","Valle del Cauca"],["VAU","Vaupés"],["VID","Vichada"]],"PE":[["AMA","Amazonas"],["APU","Apurímac"],["ARE","Arequipa"],["AYA","Ayacucho"],["CAJ","Cajamarca"],["CAL","Callao"],["CUS","Cusco"],["HUV","Huancavelica"],["HUC","Huanuco"],["ICA","Ica"],["JUN","Junín"],["LAL","La Libertad"],["LAM","Lambayeque"],["LIM","Lima"],["LOR","Loreto"],["MDD","Madre de Dios"],["MOQ","Moquegua"],["PAS","Pasco"],["PIU","Piura"],["PUN","Puno"],["SAM","San Martín"],["TAC","Tacna"],["TUM","Tumbes"],["UCA","Ucayali"],["ANC","Áncash"]],"VE":[["Z","Amazonas"],["B","Anzoátegui"],["C","Apure"],["D","Aragua"],["E","Barinas"],["F","Bolívar"],["G","Carabobo"],["H","Cojedes"],["Y","Delta Amacuro"],["A","Distrito Capital"],["I","Falcón"],["W","Federal Dependencies of Venezuela"],["J","Guárico"],["X","La Guaira"],["K","Lara"],["M","Miranda"],["N","Monagas"],["L","Mérida"],["O","Nueva Esparta"],["P","Portuguesa"],["R","Sucre"],["T","Trujillo"],["S","Táchira"],["U","Yaracuy"],["V","Zulia"]]};
+  var ZAPPY_NAME_TO_CODE = {"afghanistan":"AF","aland islands":"AX","albania":"AL","algeria":"DZ","american samoa":"AS","andorra":"AD","angola":"AO","anguilla":"AI","antarctica":"AQ","antigua and barbuda":"AG","argentina":"AR","armenia":"AM","aruba":"AW","australia":"AU","austria":"AT","azerbaijan":"AZ","the bahamas":"BS","bahrain":"BH","bangladesh":"BD","barbados":"BB","belarus":"BY","belgium":"BE","belize":"BZ","benin":"BJ","bermuda":"BM","bhutan":"BT","bolivia":"BO","bosnia and herzegovina":"BA","botswana":"BW","bouvet island":"BV","brazil":"BR","british indian ocean territory":"IO","brunei":"BN","bulgaria":"BG","burkina faso":"BF","burundi":"BI","cambodia":"KH","cameroon":"CM","canada":"CA","cape verde":"CV","cayman islands":"KY","central african republic":"CF","chad":"TD","chile":"CL","china":"CN","christmas island":"CX","cocos (keeling) islands":"CC","colombia":"CO","comoros":"KM","congo":"CG","democratic republic of the congo":"CD","cook islands":"CK","costa rica":"CR","cote d'ivoire (ivory coast)":"CI","croatia":"HR","cuba":"CU","cyprus":"CY","czech republic":"CZ","denmark":"DK","djibouti":"DJ","dominica":"DM","dominican republic":"DO","east timor":"TL","ecuador":"EC","egypt":"EG","el salvador":"SV","equatorial guinea":"GQ","eritrea":"ER","estonia":"EE","ethiopia":"ET","falkland islands":"FK","faroe islands":"FO","fiji islands":"FJ","finland":"FI","france":"FR","french guiana":"GF","french polynesia":"PF","french southern territories":"TF","gabon":"GA","the gambia":"GM","georgia":"GE","germany":"DE","ghana":"GH","gibraltar":"GI","greece":"GR","greenland":"GL","grenada":"GD","guadeloupe":"GP","guam":"GU","guatemala":"GT","guernsey and alderney":"GG","guinea":"GN","guinea-bissau":"GW","guyana":"GY","haiti":"HT","heard island and mcdonald islands":"HM","honduras":"HN","hong kong s.a.r.":"HK","hungary":"HU","iceland":"IS","india":"IN","indonesia":"ID","iran":"IR","iraq":"IQ","ireland":"IE","israel":"IL","italy":"IT","jamaica":"JM","japan":"JP","jersey":"JE","jordan":"JO","kazakhstan":"KZ","kenya":"KE","kiribati":"KI","north korea":"KP","south korea":"KR","kuwait":"KW","kyrgyzstan":"KG","laos":"LA","latvia":"LV","lebanon":"LB","lesotho":"LS","liberia":"LR","libya":"LY","liechtenstein":"LI","lithuania":"LT","luxembourg":"LU","macau s.a.r.":"MO","macedonia":"MK","madagascar":"MG","malawi":"MW","malaysia":"MY","maldives":"MV","mali":"ML","malta":"MT","man (isle of)":"IM","marshall islands":"MH","martinique":"MQ","mauritania":"MR","mauritius":"MU","mayotte":"YT","mexico":"MX","micronesia":"FM","moldova":"MD","monaco":"MC","mongolia":"MN","montenegro":"ME","montserrat":"MS","morocco":"MA","mozambique":"MZ","myanmar":"MM","namibia":"NA","nauru":"NR","nepal":"NP","bonaire, sint eustatius and saba":"BQ","netherlands":"NL","new caledonia":"NC","new zealand":"NZ","nicaragua":"NI","niger":"NE","nigeria":"NG","niue":"NU","norfolk island":"NF","northern mariana islands":"MP","norway":"NO","oman":"OM","pakistan":"PK","palau":"PW","palestinian territory occupied":"PS","panama":"PA","papua new guinea":"PG","paraguay":"PY","peru":"PE","philippines":"PH","pitcairn island":"PN","poland":"PL","portugal":"PT","puerto rico":"PR","qatar":"QA","reunion":"RE","romania":"RO","russia":"RU","rwanda":"RW","saint helena":"SH","saint kitts and nevis":"KN","saint lucia":"LC","saint pierre and miquelon":"PM","saint vincent and the grenadines":"VC","saint-barthelemy":"BL","saint-martin (french part)":"MF","samoa":"WS","san marino":"SM","sao tome and principe":"ST","saudi arabia":"SA","senegal":"SN","serbia":"RS","seychelles":"SC","sierra leone":"SL","singapore":"SG","slovakia":"SK","slovenia":"SI","solomon islands":"SB","somalia":"SO","south africa":"ZA","south georgia":"GS","south sudan":"SS","spain":"ES","sri lanka":"LK","sudan":"SD","suriname":"SR","svalbard and jan mayen islands":"SJ","swaziland":"SZ","sweden":"SE","switzerland":"CH","syria":"SY","taiwan":"TW","tajikistan":"TJ","tanzania":"TZ","thailand":"TH","togo":"TG","tokelau":"TK","tonga":"TO","trinidad and tobago":"TT","tunisia":"TN","turkey":"TR","turkmenistan":"TM","turks and caicos islands":"TC","tuvalu":"TV","uganda":"UG","ukraine":"UA","united arab emirates":"AE","united kingdom":"GB","united states":"US","united states minor outlying islands":"UM","uruguay":"UY","uzbekistan":"UZ","vanuatu":"VU","vatican city state (holy see)":"VA","venezuela":"VE","vietnam":"VN","virgin islands (british)":"VG","virgin islands (us)":"VI","wallis and futuna islands":"WF","western sahara":"EH","yemen":"YE","zambia":"ZM","zimbabwe":"ZW","kosovo":"XK","curaçao":"CW","sint maarten (dutch part)":"SX"};
+
+  function initShippingCountry() {
+    var input = document.getElementById('shipping-country');
+    if (!input) return;
+
+    fetchStoreSettings().then(function() {
+      if (storeCountry) {
+        var code = resolveStoreCountry(storeCountry);
+        if (code) {
+          input.value = code;
+          onCountryChange(code);
+        }
+      }
+    });
+  }
+
+  function resolveStoreCountry(val) {
+    if (!val) return null;
+    var upper = val.trim().toUpperCase();
+    if (ZAPPY_STATE_MAP[upper] || upper.length === 2) return upper;
+    var lower = val.trim().toLowerCase();
+    if (ZAPPY_NAME_TO_CODE[lower]) return ZAPPY_NAME_TO_CODE[lower];
+    var keys = Object.keys(ZAPPY_NAME_TO_CODE);
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].indexOf(lower) !== -1) return ZAPPY_NAME_TO_CODE[keys[i]];
+    }
+    return null;
+  }
+
+  function onCountryChange(countryCode) {
+    var stateWrapper = document.getElementById('state-wrapper');
+    var stateSel = document.getElementById('shipping-state');
+    if (!stateWrapper || !stateSel) return;
+
+    var states = ZAPPY_STATE_MAP[countryCode];
+    if (states && states.length > 0) {
+      stateSel.innerHTML = '<option value="">' + (t.stateProvince || 'State / Province') + '</option>';
+      states.forEach(function(s) {
+        var opt = document.createElement('option');
+        opt.value = s[0];
+        opt.textContent = s[1];
+        stateSel.appendChild(opt);
+      });
+      stateWrapper.style.display = 'block';
+    } else {
+      stateSel.innerHTML = '';
+      stateWrapper.style.display = 'none';
+    }
+  }
+
+  if (document.getElementById('shipping-country')) {
+    initShippingCountry();
+  }
+
   
   // Helper to strip RTL/LTR control characters that browsers may insert in RTL interfaces
   function sanitizeEmail(str) {
@@ -1239,6 +1834,20 @@ function stripHtmlToText(html) {
   let selectedShipping = null;
   let shippingMethods = [];
   
+  function positionAddressSection(method) {
+    var addressSection = document.getElementById('shipping-address-section');
+    if (!addressSection) return;
+    if (method && !method.is_pickup) {
+      var block = document.querySelector('.shipping-method-block[data-method-id="' + method.id + '"]');
+      if (block) {
+        block.appendChild(addressSection);
+        addressSection.style.display = 'block';
+      }
+    } else {
+      addressSection.style.display = 'none';
+    }
+  }
+
   // Load shipping methods on checkout page
   async function loadShippingMethods() {
     const container = document.getElementById('shipping-methods');
@@ -1254,36 +1863,48 @@ function stripHtmlToText(html) {
         return;
       }
       
+      var svgDelivery = '<svg class="shipping-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
+      var svgPickupPoint = '<svg class="shipping-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+      var svgStorePickup = '<svg class="shipping-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-4h16l1 4"/><path d="M3 9v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M9 21v-6h6v6"/><path d="M3 9h18"/></svg>';
+
       container.innerHTML = shippingMethods.map((method, idx) => {
         const isPickup = method.is_pickup;
         const isFree = parseFloat(method.price) === 0;
         const hasFreeAbove = method.conditions?.freeAbove && getCartSubtotal() >= method.conditions.freeAbove;
         const priceDisplay = isFree || hasFreeAbove ? (t.free || 'FREE') : t.currency + method.price;
         const daysText = method.estimated_days ? ' (' + method.estimated_days + ' ' + t.days + ')' : '';
-        const pickupIcon = isPickup ? '📍 ' : '🚚 ';
+        var methodIcon;
+        if (!isPickup) {
+          methodIcon = svgDelivery;
+        } else if (method.pickup_address?.street) {
+          methodIcon = svgStorePickup;
+        } else {
+          methodIcon = svgPickupPoint;
+        }
         const pickupAddress = isPickup && method.pickup_address?.street ? '<div class="shipping-address">' + method.pickup_address.street + ', ' + (method.pickup_address.city || '') + '</div>' : '';
         const freeAboveNote = method.conditions?.freeAbove && !hasFreeAbove ? '<div class="shipping-free-note">' + (t.freeAbove || 'Free above') + ' ' + t.currency + method.conditions.freeAbove + '</div>' : '';
         
-        return '<label class="shipping-option' + (idx === 0 ? ' selected' : '') + '" data-method-id="' + method.id + '">' +
-          '<input type="radio" name="shipping" value="' + method.id + '"' + (idx === 0 ? ' checked' : '') + ' onchange="window.zappySelectShipping(this.value)">' +
-          '<div class="shipping-info">' +
-            '<div class="shipping-name">' + pickupIcon + method.name + daysText + '</div>' +
-            (method.description ? '<div class="shipping-desc">' + method.description + '</div>' : '') +
-            pickupAddress +
-            freeAboveNote +
-          '</div>' +
-          '<div class="shipping-price' + (isFree || hasFreeAbove ? ' free' : '') + '">' + priceDisplay + '</div>' +
-        '</label>';
+        return '<div class="shipping-method-block" data-method-id="' + method.id + '">' +
+          '<label class="shipping-option' + (idx === 0 ? ' selected' : '') + '" data-method-id="' + method.id + '">' +
+            '<input type="radio" name="shipping" value="' + method.id + '"' + (idx === 0 ? ' checked' : '') + ' onchange="window.zappySelectShipping(this.value)">' +
+            '<div class="shipping-info">' +
+              '<div class="shipping-name-row">' +
+                '<span class="shipping-name">' + method.name + '</span>' +
+                methodIcon +
+              '</div>' +
+              (method.description ? '<div class="shipping-desc">' + method.description + daysText + '</div>' : (daysText ? '<div class="shipping-desc">' + daysText.replace(/^ \(/, '').replace(/\)$/, '') + '</div>' : '')) +
+              pickupAddress +
+              freeAboveNote +
+            '</div>' +
+            '<div class="shipping-price' + (isFree || hasFreeAbove ? ' free' : '') + '">' + priceDisplay + '</div>' +
+          '</label>' +
+        '</div>';
       }).join('');
       
-      // Auto-select first option
+      // Auto-select first option and position address form inline
       if (shippingMethods.length > 0) {
         selectedShipping = shippingMethods[0];
-        // Show/hide shipping address based on pickup status
-        const addressSection = document.getElementById('shipping-address-section');
-        if (addressSection) {
-          addressSection.style.display = selectedShipping.is_pickup ? 'none' : 'block';
-        }
+        positionAddressSection(shippingMethods[0]);
         updateOrderTotals();
       }
     } catch (e) {
@@ -1317,18 +1938,22 @@ function stripHtmlToText(html) {
         return;
       }
       
+      var paymentIcons = {
+        'credit-card': '<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="10" width="44" height="30" rx="4" fill="#1A1F71"/><rect x="3" y="10" width="44" height="10" fill="#E4A935"/><rect x="7" y="25" width="18" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/><rect x="7" y="31" width="12" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/><circle cx="35" cy="30" r="7" fill="#EB001B" opacity="0.9"/><circle cx="41" cy="30" r="7" fill="#F79E1B" opacity="0.9"/></svg>',
+        'paypal': '<svg width="36" height="36" viewBox="0 0 30.55 36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M27.5 9.15s-.85.45-.89.68c-1.44 7.57-5.73 9.65-12.17 9.65h-3.29c-.81 0-1.92 1.13-2.05 1.9l-1.7 9.9.47.78-.45 3.06c-.09.45.22.9.72.95h5.81c.68 0 1.26-.5 1.4-1.17l.04-.32s1.08-6.93 1.08-6.94c.13-.81.58-1.53 1.49-1.53h.86c5.63 0 10.05-2.3 11.35-8.92.54-2.75.27-5.09-1.17-6.71a6.5 6.5 0 0 0-1.45-1.29Z" fill="#009BD9"/><path d="M26.08 7.68a15.8 15.8 0 0 0-4.44-.52h-8.79c-.68 0-1.86.89-1.99 1.57L8.87 20.95l.7.36c.13-.77.81-1.35 1.58-1.35h3.29c6.44 0 11.46-2.6 12.95-10.17.04-.23.07-.39.12-.64 0 0-.47-1.06-.86-1.26-.18-.08-.37-.15-.56-.2Z" fill="#192A67"/><path d="M11.5 9.19c.09-.68.68-1.17 1.4-1.17h8.74c1.04 0 2.03.09 2.88.23.59.09 1.17.23 1.76.41.45.14.86.32 1.22.5.45-2.79 0-4.69-1.53-6.44C24.34.81 21.33 0 17.45 0H6.28c-.77 0-1.44.59-1.58 1.35L.01 30.91c-.09.54.28 1.04.82 1.08h6.84l1.76-11.01L11.5 9.2Z" fill="#0A3B82"/></svg>',
+        'apple-pay': '<svg width="50" height="21" viewBox="0 0 50 21" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.37 2.78A3.14 3.14 0 0 0 10.1.65 3.2 3.2 0 0 0 7.97 1.75a3 3 0 0 0-.76 2.06c.81.06 1.56-.37 2.16-1.03Zm.72 1.08c-1.2-.07-2.22.68-2.78.68-.57 0-1.43-.64-2.37-.62A3.5 3.5 0 0 0 2 5.55c-1.27 2.2-.33 5.46.9 7.25.61.88 1.33 1.87 2.28 1.83.9-.04 1.26-.58 2.35-.58s1.42.58 2.37.56c.99-.02 1.6-.88 2.2-1.77a7.8 7.8 0 0 0 1-2.05 3.2 3.2 0 0 1-1.92-2.93 3.24 3.24 0 0 1 1.54-2.72 3.33 3.33 0 0 0-2.63-1.28Zm8.15-1.5v12.2h1.89V10h2.61c2.38 0 4.05-1.64 4.05-4.07s-1.64-4.03-3.98-4.03h-4.57v2.46Zm1.89 1.56h2.17c1.64 0 2.57.87 2.57 2.4s-.93 2.41-2.58 2.41h-2.16V3.92Zm10.92 10.9c1.19 0 2.29-.6 2.79-1.56h.04v1.46h1.75V9.01c0-1.75-1.4-2.88-3.56-2.88-2 0-3.46 1.15-3.52 2.72h1.7c.14-.75.83-1.24 1.75-1.24 1.13 0 1.76.52 1.76 1.49v.65l-2.3.14c-2.14.13-3.3 1.01-3.3 2.53 0 1.54 1.19 2.57 2.89 2.57Zm.5-1.42c-.98 0-1.61-.47-1.61-1.2 0-.75.6-1.18 1.75-1.25l2.05-.13v.67c0 1.12-.95 1.91-2.19 1.91Zm5.37 4.56c1.84 0 2.71-.7 3.47-2.84l3.32-9.33h-1.93l-2.23 7.17h-.04l-2.23-7.17h-1.98l3.2 8.85-.17.54c-.29.92-.76 1.27-1.6 1.27-.15 0-.44-.02-.56-.03v1.48c.11.04.48.06.75.06Z" fill="#000"/></svg>',
+        'google-pay': '<svg width="50" height="20" viewBox="0 0 50 19.62" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M23.34 9.54V15.32H21.5V1.04h4.87c1.23 0 2.28.41 3.14 1.23.88.82 1.32 1.83 1.32 3.01 0 1.21-.44 2.22-1.32 3.03-.85.81-1.9 1.21-3.14 1.21h-3.03v.02Zm0-6.74v4.98h3.07c.73 0 1.34-.25 1.82-.74.49-.49.74-1.08.74-1.74 0-.66-.25-1.24-.74-1.73-.48-.5-1.08-.75-1.82-.75h-3.07v-.02Z" fill="#383E41"/><path d="M35.63 5.23c1.36 0 2.43.36 3.21 1.09.78.73 1.18 1.72 1.18 2.98v6.02h-1.75v-1.36h-.08c-.76 1.12-1.77 1.67-3.03 1.67-1.08 0-1.98-.32-2.7-.96-.73-.64-1.1-1.43-1.1-2.39 0-1.01.38-1.82 1.15-2.41.76-.6 1.79-.9 3.06-.9 1.09 0 1.99.2 2.69.6v-.42c0-.64-.25-1.18-.76-1.63-.5-.45-1.1-.67-1.77-.67-1.02 0-1.84.43-2.43 1.3l-1.62-1.01c.89-1.29 2.21-1.93 3.95-1.93Zm-2.37 7.09c0 .48.2.88.61 1.2.4.31.88.48 1.43.48.77 0 1.46-.29 2.06-.86.6-.57.91-1.24.91-2.02-.57-.45-1.36-.68-2.39-.68-.75 0-1.37.18-1.87.54-.49.37-.75.82-.75 1.34Z" fill="#383E41"/><path d="M50 5.54l-6.12 14.07h-1.99l2.28-4.92-4.03-9.15h2l2.91 7.02h.04l2.83-7.02H50Z" fill="#383E41"/><path d="M15.88 6.65H8.19v3.16h4.43c-.18 1.05-.76 1.95-1.64 2.54l2.64.16c1.54-1.43 2.42-3.53 2.42-6.02 0-.6-.05-1.17-.16-1.72Z" fill="#0085F7"/><path d="M10.98 12.35c-.74.5-1.68.78-2.79.78-2.14 0-3.95-1.44-4.6-3.38l2.27-.36.45 2.47c1.35 2.68 4.12 4.51 7.32 4.51 2.21 0 4.07-.73 5.42-1.98l-2.65-2.04h-.04Z" fill="#00A94B"/><path d="M3.34 8.19c0-.55.09-1.07.26-1.57L.87 4.51A8.19 8.19 0 0 0 0 8.19c0 1.32.31 2.57.87 3.68l2.72-2.11c-.17-.5-.25-1.02-.25-1.57Z" fill="#FFBB00"/><path d="M8.19 0C4.99 0 2.22 1.84.87 4.51l2.72 2.11C4.24 4.68 6.05 3.24 8.19 3.24c1.21 0 2.29.42 3.14 1.23l2.34-2.34C12.25.81 10.4 0 8.19 0Z" fill="#FF4031"/></svg>'
+      };
+      
       container.innerHTML = paymentMethods.map((method, idx) => {
         const name = isRTL ? method.name : method.nameEn;
-        const icon = method.icon === 'credit-card' ? 
-          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>' :
-          '';
+        var iconKey = (method.icon || '').toLowerCase().replace(/[\s_]+/g, '-');
+        var icon = paymentIcons[iconKey] || '';
         
         return '<label class="payment-option' + (idx === 0 ? ' selected' : '') + '" data-method-id="' + method.id + '">' +
           '<input type="radio" name="payment" value="' + method.id + '"' + (idx === 0 ? ' checked' : '') + ' onchange="window.zappySelectPayment(this.value)">' +
-          '<div class="payment-info">' +
-            '<div class="payment-icon">' + icon + '</div>' +
-            '<div class="payment-name">' + name + '</div>' +
-          '</div>' +
+          '<div class="payment-name">' + name + '</div>' +
+          (icon ? '<div class="payment-icon">' + icon + '</div>' : '') +
         '</label>';
       }).join('');
       
@@ -1476,6 +2101,8 @@ function stripHtmlToText(html) {
       }
       
       // Get shipping address
+      const shippingCountry = document.getElementById('shipping-country')?.value?.trim() || '';
+      const shippingState = document.getElementById('shipping-state')?.value?.trim() || '';
       const shippingStreet = document.getElementById('shipping-street')?.value?.trim() || '';
       const shippingApartment = document.getElementById('shipping-apartment')?.value?.trim() || '';
       const shippingCity = document.getElementById('shipping-city')?.value?.trim() || '';
@@ -1492,6 +2119,12 @@ function stripHtmlToText(html) {
           showFieldError('shipping-city', 'shipping-city-error', getEcomText('cityRequired', t.cityRequired || (isRTL ? 'נא להזין עיר' : 'Please enter your city')));
           hasErrors = true;
           if (!firstErrorField) firstErrorField = 'shipping-city';
+        }
+        var stateWrapperEl = document.getElementById('state-wrapper');
+        if (stateWrapperEl && stateWrapperEl.style.display !== 'none' && !shippingState) {
+          showFieldError('shipping-state', 'shipping-state-error', getEcomText('stateRequired', t.stateRequired || (isRTL ? 'נא לבחור מדינה / מחוז' : 'Please select a state / province')));
+          hasErrors = true;
+          if (!firstErrorField) firstErrorField = 'shipping-state';
         }
       }
       
@@ -1553,6 +2186,8 @@ function stripHtmlToText(html) {
               const newAddress = {
                 id: 'addr_' + Date.now(),
                 label: 'home',
+                country: shippingCountry || '',
+                state: shippingState || '',
                 street: shippingStreet,
                 apartment: shippingApartment || '',
                 city: shippingCity,
@@ -1573,6 +2208,8 @@ function stripHtmlToText(html) {
               if (existingIndex >= 0) {
                 // Update existing address and set as default
                 updatedAddresses[existingIndex] = Object.assign({}, updatedAddresses[existingIndex], {
+                  country: newAddress.country,
+                  state: newAddress.state,
                   apartment: newAddress.apartment,
                   zip: newAddress.zip,
                   isDefault: true
@@ -1622,6 +2259,8 @@ function stripHtmlToText(html) {
             customerName: customerName,
             customerPhone: customerPhone,
             shippingAddress: {
+              country: shippingCountry,
+              state: shippingState,
               street: shippingStreet,
               apartment: shippingApartment,
               city: shippingCity,
@@ -1784,12 +2423,21 @@ function stripHtmlToText(html) {
         if (customer.addresses && customer.addresses.length > 0) {
           // Find default address, or use the first one
           const defaultAddress = customer.addresses.find(function(addr) { return addr.isDefault; }) || customer.addresses[0];
-          
+
+          const countryInput = document.getElementById('shipping-country');
+          const stateInput = document.getElementById('shipping-state');
           const streetInput = document.getElementById('shipping-street');
           const apartmentInput = document.getElementById('shipping-apartment');
           const cityInput = document.getElementById('shipping-city');
           const zipInput = document.getElementById('shipping-zip');
-          
+
+          if (defaultAddress.country && countryInput && !countryInput.value) {
+            countryInput.value = defaultAddress.country;
+            if (typeof onCountryChange === 'function') onCountryChange(defaultAddress.country);
+          }
+          if (defaultAddress.state && stateInput) {
+            setTimeout(function() { if (!stateInput.value) stateInput.value = defaultAddress.state; }, 50);
+          }
           if (defaultAddress.street && streetInput && !streetInput.value) {
             streetInput.value = defaultAddress.street;
           }
@@ -1928,6 +2576,13 @@ function stripHtmlToText(html) {
           showFieldError('shipping-city', 'shipping-city-error', getEcomText('cityRequired', t.cityRequired));
           hasErrors = true;
           if (!firstErrorField) firstErrorField = 'shipping-city';
+        }
+        var stW = document.getElementById('state-wrapper');
+        var stV = (document.getElementById('shipping-state') || {}).value || '';
+        if (stW && stW.style.display !== 'none' && !stV.trim()) {
+          showFieldError('shipping-state', 'shipping-state-error', getEcomText('stateRequired', t.stateRequired));
+          hasErrors = true;
+          if (!firstErrorField) firstErrorField = 'shipping-state';
         }
       }
     }
@@ -2216,25 +2871,15 @@ function stripHtmlToText(html) {
   // Select shipping method
   window.zappySelectShipping = function(methodId) {
     selectedShipping = shippingMethods.find(m => m.id === methodId);
-    // Update UI
     document.querySelectorAll('.shipping-option').forEach(el => {
       el.classList.toggle('selected', el.dataset.methodId === methodId);
     });
-    // Clear shipping method error when selected
     var shippingError = document.getElementById('shipping-method-error');
     if (shippingError) {
       shippingError.textContent = '';
       shippingError.classList.remove('visible');
     }
-    // Show/hide shipping address based on pickup status
-    const addressSection = document.getElementById('shipping-address-section');
-    if (addressSection) {
-      if (selectedShipping && selectedShipping.is_pickup) {
-        addressSection.style.display = 'none';
-      } else {
-        addressSection.style.display = 'block';
-      }
-    }
+    positionAddressSection(selectedShipping);
     updateOrderTotals();
   };
   
@@ -2583,6 +3228,7 @@ function stripHtmlToText(html) {
       if (currentState !== lastMenuState) {
         lastMenuState = currentState;
         if (currentState) {
+          document.body.classList.add('menu-open');
           // Menu just opened - add overlay
           if (!document.querySelector('.mobile-menu-overlay')) {
             const overlay = document.createElement('div');
@@ -2596,6 +3242,7 @@ function stripHtmlToText(html) {
             document.body.appendChild(overlay);
           }
         } else {
+          document.body.classList.remove('menu-open');
           // Menu just closed - remove overlay
           const overlay = document.querySelector('.mobile-menu-overlay');
           if (overlay) overlay.remove();
@@ -2652,8 +3299,13 @@ function stripHtmlToText(html) {
 
       const apply = function() {
         const menuOpen = menu.classList.contains('active') || menu.classList.contains('open') || menu.classList.contains('show');
-        if (menuOpen) toggle.classList.add('active');
-        else toggle.classList.remove('active');
+        if (menuOpen) {
+          toggle.classList.add('active');
+          document.body.classList.add('menu-open');
+        } else {
+          toggle.classList.remove('active');
+          document.body.classList.remove('menu-open');
+        }
       };
 
       apply();
@@ -4326,7 +4978,7 @@ async function loadFeaturedProducts() {
   // Ensure store settings are loaded first (for productLayout)
   await fetchAdditionalJsSettings();
   
-  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","apartment":"Apt, Floor, Unit","city":"City","zip":"ZIP Code","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
+  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","streetAndNumber":"Street and Number","apartment":"Apt, Floor, Unit","apartmentExt":"Apt, Floor, Building Code, Notes, Etc.","city":"City","zip":"ZIP Code","zipPostal":"Zip / Postal Code","countryRegion":"Country / Region","stateProvince":"State / Province","stateRequired":"Please select a state / province","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","signInHere":"Sign in here","mobileNumber":"Mobile Number","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
   
   try {
     // Only fetch featured products - no fallback, with language support
@@ -4663,30 +5315,141 @@ function initTransparentNavbarScrollEffect() {
   // Determine frosted glass color from the page background
   var bodyBg = getComputedStyle(document.body).backgroundColor || 'rgb(0,0,0)';
   var m = bodyBg.match(/\d+/g);
-  var frostedBg = m && m.length >= 3 ? 'rgba(' + m[0] + ',' + m[1] + ',' + m[2] + ',0.85)' : 'rgba(0,0,0,0.85)';
+  var r = m ? parseInt(m[0]) : 0, g = m ? parseInt(m[1]) : 0, b = m ? parseInt(m[2]) : 0;
+  var frostedBg = 'rgba(' + r + ',' + g + ',' + b + ',0.85)';
   var threshold = 60;
+
+  // Determine correct text color for the frosted glass background via luminance
+  var sR = r / 255, sG = g / 255, sB = b / 255;
+  sR = sR <= 0.03928 ? sR / 12.92 : Math.pow((sR + 0.055) / 1.055, 2.4);
+  sG = sG <= 0.03928 ? sG / 12.92 : Math.pow((sG + 0.055) / 1.055, 2.4);
+  sB = sB <= 0.03928 ? sB / 12.92 : Math.pow((sB + 0.055) / 1.055, 2.4);
+  var frostedLum = 0.2126 * sR + 0.7152 * sG + 0.0722 * sB;
+  var frostedIsLight = frostedLum > 0.4;
+  var rootStyle = getComputedStyle(document.documentElement);
+  var textDark = rootStyle.getPropertyValue('--text-dark').trim() || '#1a1a1a';
+  var textLight = rootStyle.getPropertyValue('--text-light').trim() || '#ffffff';
+  var scrolledTextColor = frostedIsLight ? textDark : textLight;
 
   nb.style.transition = 'background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease, box-shadow 0.3s ease';
   if (cm) cm.style.transition = 'background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease';
 
+  var navElSelector = 'a, .navbar-brand, .navbar-brand a, .dropdown-toggle, .mobile-toggle, .phone-header-btn, .mobile-hamburger-btn, .mobile-close-btn, .mobile-submenu-toggle, .nav-link';
+  var skipClasses = ['cart-link', 'login-link', 'nav-search-toggle', 'search-toggle'];
+
+  function setScrolledColors(container, color) {
+    var els = container.querySelectorAll(navElSelector);
+    for (var i = 0; i < els.length; i++) {
+      var skip = false;
+      for (var j = 0; j < skipClasses.length; j++) {
+        if (els[i].classList.contains(skipClasses[j])) { skip = true; break; }
+      }
+      if (!skip) els[i].style.setProperty('color', color, 'important');
+    }
+  }
+
+  function clearScrolledColors(container) {
+    var els = container.querySelectorAll(navElSelector);
+    for (var i = 0; i < els.length; i++) els[i].style.removeProperty('color');
+  }
+
   function onScroll() {
+    if (window._zappyNavOverrideActive) return;
+    if (window.innerWidth <= 768) {
+      nb.style.removeProperty('background');
+      nb.style.removeProperty('background-color');
+      nb.style.removeProperty('background-image');
+      nb.style.removeProperty('--frosted-text');
+      nb.style.backdropFilter = '';
+      nb.style.webkitBackdropFilter = '';
+      nb.style.boxShadow = '';
+      nb.classList.remove('scrolled');
+      clearScrolledColors(nb);
+      if (cm) {
+        cm.style.removeProperty('background');
+        cm.style.removeProperty('background-color');
+        cm.style.removeProperty('backdrop-filter');
+        cm.style.removeProperty('-webkit-backdrop-filter');
+        cm.classList.remove('scrolled');
+        clearScrolledColors(cm);
+      }
+      return;
+    }
     var y = window.scrollY || window.pageYOffset;
     if (y > threshold) {
-      nb.style.background = frostedBg;
+      nb.classList.add('scrolled');
+      nb.style.setProperty('background-color', frostedBg, 'important');
+      nb.style.setProperty('background-image', 'none', 'important');
+      nb.style.setProperty('--frosted-text', scrolledTextColor);
       nb.style.backdropFilter = 'blur(12px)';
       nb.style.webkitBackdropFilter = 'blur(12px)';
       nb.style.boxShadow = '0 2px 16px rgba(0,0,0,0.12)';
-      if (cm) { cm.style.background = frostedBg; cm.style.backdropFilter = 'blur(12px)'; cm.style.webkitBackdropFilter = 'blur(12px)'; }
+      setScrolledColors(nb, scrolledTextColor);
+      if (cm) {
+        cm.classList.add('scrolled');
+        cm.style.setProperty('background', frostedBg, 'important');
+        cm.style.setProperty('backdrop-filter', 'blur(12px)', 'important');
+        cm.style.setProperty('-webkit-backdrop-filter', 'blur(12px)', 'important');
+        setScrolledColors(cm, scrolledTextColor);
+      }
     } else {
-      nb.style.background = 'transparent';
+      nb.classList.remove('scrolled');
+      nb.style.setProperty('background-color', 'transparent', 'important');
+      nb.style.removeProperty('background-image');
+      nb.style.removeProperty('--frosted-text');
       nb.style.backdropFilter = 'none';
       nb.style.webkitBackdropFilter = 'none';
       nb.style.boxShadow = 'none';
-      if (cm) { cm.style.background = 'transparent'; cm.style.backdropFilter = 'none'; cm.style.webkitBackdropFilter = 'none'; }
+      clearScrolledColors(nb);
+      if (cm) {
+        cm.classList.remove('scrolled');
+        cm.style.setProperty('background', 'transparent', 'important');
+        cm.style.setProperty('backdrop-filter', 'none', 'important');
+        cm.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        clearScrolledColors(cm);
+      }
     }
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  window._zappyNavScrollCleanup = function() { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   onScroll();
+
+  // On pages without a dark hero, the transparent navbar shows light text on
+  // a light background — invisible. Detect this and lock the frosted state.
+  var heroEl = document.querySelector('section[class*="hero"], [data-hero-type]');
+  var pageHasDarkHero = false;
+  if (heroEl) {
+    var hCs = getComputedStyle(heroEl);
+    if (hCs.backgroundImage !== 'none' || heroEl.querySelector('[class*="scrim"], [class*="overlay"]')) {
+      pageHasDarkHero = true;
+    } else {
+      var hBgM = hCs.backgroundColor.match(/\d+/g);
+      if (hBgM) {
+        var hLum = 0.2126 * parseInt(hBgM[0]) / 255 + 0.7152 * parseInt(hBgM[1]) / 255 + 0.0722 * parseInt(hBgM[2]) / 255;
+        if (hLum < 0.4) pageHasDarkHero = true;
+      }
+    }
+  }
+  if (!pageHasDarkHero) {
+    window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('resize', onScroll);
+    nb.classList.add('scrolled');
+    nb.style.setProperty('--frosted-text', scrolledTextColor);
+    nb.style.setProperty('background-image', 'none', 'important');
+    nb.style.backdropFilter = 'blur(12px)';
+    nb.style.webkitBackdropFilter = 'blur(12px)';
+    nb.style.boxShadow = '0 2px 16px rgba(0,0,0,0.12)';
+    setScrolledColors(nb, scrolledTextColor);
+    if (window.innerWidth > 768) nb.style.setProperty('background-color', frostedBg, 'important');
+    if (cm) {
+      cm.classList.add('scrolled');
+      cm.style.setProperty('background', frostedBg, 'important');
+      cm.style.setProperty('backdrop-filter', 'blur(12px)', 'important');
+      cm.style.setProperty('-webkit-backdrop-filter', 'blur(12px)', 'important');
+      setScrolledColors(cm, scrolledTextColor);
+    }
+  }
 }
 
 // Initialize featured products, categories, and product/category page details on load
@@ -4797,7 +5560,7 @@ async function loadProductDetailPage() {
   const websiteId = window.ZAPPY_WEBSITE_ID;
   if (!websiteId) return;
   
-  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","apartment":"Apt, Floor, Unit","city":"City","zip":"ZIP Code","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
+  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","streetAndNumber":"Street and Number","apartment":"Apt, Floor, Unit","apartmentExt":"Apt, Floor, Building Code, Notes, Etc.","city":"City","zip":"ZIP Code","zipPostal":"Zip / Postal Code","countryRegion":"Country / Region","stateProvince":"State / Province","stateRequired":"Please select a state / province","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","signInHere":"Sign in here","mobileNumber":"Mobile Number","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
   
   // Get slug from URL - check both pathname and query parameter (preview mode)
   let pagePath = window.location.pathname;
@@ -4850,7 +5613,7 @@ async function loadCategoryPage() {
   const websiteId = window.ZAPPY_WEBSITE_ID;
   if (!websiteId) return;
   
-  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","apartment":"Apt, Floor, Unit","city":"City","zip":"ZIP Code","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
+  const t = {"products":"Products","ourProducts":"Our Products","featuredProducts":"Featured Products","noFeaturedProducts":"No featured products yet. Check out all our products!","featuredCategories":"Shop by Category","all":"All","featured":"Featured","new":"New","sale":"Sale","loadingProducts":"Loading products...","cart":"Cart","yourCart":"Your Cart","emptyCart":"Cart is empty","total":"Total","proceedToCheckout":"Proceed to Checkout","checkout":"Checkout","customerInfo":"Customer Info","fullName":"Full Name","email":"Email","phone":"Phone","shippingAddress":"Shipping Address","street":"Street Address","streetAndNumber":"Street and Number","apartment":"Apt, Floor, Unit","apartmentExt":"Apt, Floor, Building Code, Notes, Etc.","city":"City","zip":"ZIP Code","zipPostal":"Zip / Postal Code","countryRegion":"Country / Region","stateProvince":"State / Province","stateRequired":"Please select a state / province","saveAddressForNextTime":"Save this address for next time","shippingMethod":"Shipping Method","loadingShipping":"Loading shipping methods...","payment":"Payment","loadingPayment":"Loading payment options...","orderSummary":"Order Summary","subtotal":"Subtotal","vat":"VAT","vatIncluded":"VAT Included","shipping":"Shipping","discount":"Discount","totalToPay":"Total","placeOrder":"Place Order","login":"Login","customerLogin":"Customer Login","enterEmail":"Enter your email and we'll send you a login code","emailAddress":"Email Address","sendCode":"Send Code","enterCode":"Enter the code sent to your email","verificationCode":"Verification Code","verify":"Verify","returnPolicy":"Return Policy","addToCart":"Add to Cart","startingAt":"Starting at","addedToCart":"Product added to cart!","remove":"Remove","noProducts":"No products to display","errorLoading":"Error loading","days":"days","currency":"$","free":"FREE","freeAbove":"Free above","noShippingMethods":"No shipping options available","viewAllResults":"View all results","searchProducts":"Search products","productDetails":"Product Details","viewDetails":"View Details","inStock":"In Stock","outOfStock":"Out of Stock","pleaseSelect":"Please select","sku":"SKU","category":"Category","relatedProducts":"Related Products","productNotFound":"Product not found","backToProducts":"Back to Products","home":"Home","quantity":"Quantity","unitLabels":{"piece":"pcs","kg":"kg","gram":"g","liter":"L","ml":"ml"},"perUnit":"/","couponCode":"Coupon Code","enterCouponCode":"Enter coupon code","applyCoupon":"Apply","removeCoupon":"Remove","couponApplied":"Coupon applied successfully!","invalidCoupon":"Invalid coupon code","couponExpired":"Coupon has expired","couponMinOrder":"Minimum order amount","alreadyHaveAccount":"Already have an account?","loginHere":"Login here","signInHere":"Sign in here","mobileNumber":"Mobile Number","loggedInAs":"Logged in as:","logout":"Logout","haveCouponCode":"I have a coupon code","agreeToTerms":"I agree to the","termsAndConditions":"Terms and Conditions","pleaseAcceptTerms":"Please accept the terms and conditions","nameRequired":"Please enter your full name","emailRequired":"Please enter your email address","emailInvalid":"Please enter a valid email address","phoneRequired":"Please enter your phone number","shippingRequired":"Please select a shipping method","streetRequired":"Please enter your street address","cityRequired":"Please enter your city","cartEmpty":"Your cart is empty","paymentNotConfigured":"Online payment not configured","orderSuccess":"Order Received!","thankYouOrder":"Thank you for your order","orderNumber":"Order Number","orderConfirmation":"A confirmation email has been sent to you","orderProcessing":"Your order is being processed. We'll notify you when it ships.","continueShopping":"Continue Shopping","next":"Next","contactInformation":"Contact Information","items":"Items","continueToHomePage":"Continue to Home Page","transactionDate":"Transaction Date","paymentMethod":"Payment Method","orderDetails":"Order Details","loadingOrder":"Loading order details...","orderNotFound":"Order not found","orderItems":"Order Items","paidAmount":"Amount Paid","myAccount":"My Account","accountWelcome":"Welcome","yourOrders":"Your Orders","noOrders":"No orders yet","orderDate":"Date","orderStatus":"Status","orderTotal":"Total","viewOrder":"View Order","statusPending":"Pending Payment","statusPaid":"Paid","statusProcessing":"Processing","statusShipped":"Shipped","statusDelivered":"Delivered","statusCancelled":"Cancelled","notLoggedIn":"Not Logged In","pleaseLogin":"Please login to view your account","personalDetails":"Personal Details","editProfile":"Edit Profile","name":"Name","saveChanges":"Save Changes","cancel":"Cancel","addresses":"Addresses","addAddress":"Add Address","editAddress":"Edit Address","deleteAddress":"Delete Address","setAsDefault":"Set as Default","defaultAddress":"Default Address","addressLabel":"Address Label","work":"Work","other":"Other","noAddresses":"No saved addresses","confirmDelete":"Are you sure you want to delete?","profileUpdated":"Profile updated successfully","addressSaved":"Address saved successfully","addressDeleted":"Address deleted","saving":"Saving...","saveToFavorites":"Save to Favorites","removeFromFavorites":"Remove from Favorites","shareProduct":"Share Product","linkCopied":"Link copied!","myFavorites":"My Favorites","noFavorites":"No favorites yet","addedToFavorites":"Added to favorites","removedFromFavorites":"Removed from favorites","loginToFavorite":"Log in to save favorites","browseFavorites":"Discover all our products","selectVariant":"Select option","variantUnavailable":"Unavailable","color":"Color","size":"Size","material":"Material","style":"Style","weight":"Weight","capacity":"Capacity","length":"Length","inquiryAbout":"Inquiry about","sendInquiry":"Send Inquiry","callNow":"Call Now","specifications":"Specifications","businessPhone":"[business_phone]","businessEmail":"[business_email]"};
   
   // Get slug from URL - check both pathname and query parameter (preview mode)
   let pagePath = window.location.pathname;
@@ -6261,420 +7024,6 @@ async function loadRelatedProducts(currentProduct, t) {
 }
 /* ==ZAPPY E-COMMERCE JS END== */
 
-/* Cookie Consent */
-
-// Helper function to check cookie consent
-function hasConsentFor(category) {
-  if (typeof window.CookieConsent === 'undefined') {
-    return false; // Default to no consent if cookie consent not loaded
-  }
-  
-  return window.CookieConsent.validConsent(category);
-}
-
-// Helper function to execute code only with consent
-function withConsent(category, callback) {
-  if (hasConsentFor(category)) {
-    callback();
-  } else {
-    console.log(`[WARNING] Skipping ${category} code - no user consent`);
-  }
-}
-
-// Cookie Consent Initialization
-
-(function() {
-  'use strict';
-  
-  let initAttempts = 0;
-  const maxAttempts = 50; // 5 seconds max wait
-  
-  // Wait for DOM and vanilla-cookieconsent to be ready
-  function initCookieConsent() {
-    initAttempts++;
-    
-    
-    if (typeof window.CookieConsent === 'undefined') {
-      if (initAttempts < maxAttempts) {
-        setTimeout(initCookieConsent, 100);
-      } else {
-      }
-      return;
-    }
-
-    const cc = window.CookieConsent;
-    
-    
-    // Initialize cookie consent
-    try {
-      cc.run({
-  "autoShow": true,
-  "mode": "opt-in",
-  "revision": 0,
-  "categories": {
-    "necessary": {
-      "enabled": true,
-      "readOnly": true
-    },
-    "analytics": {
-      "enabled": false,
-      "readOnly": false,
-      "autoClear": {
-        "cookies": [
-          {
-            "name": "_ga"
-          },
-          {
-            "name": "_ga_*"
-          },
-          {
-            "name": "_gid"
-          },
-          {
-            "name": "_gat"
-          }
-        ]
-      }
-    },
-    "marketing": {
-      "enabled": false,
-      "readOnly": false,
-      "autoClear": {
-        "cookies": [
-          {
-            "name": "_fbp"
-          },
-          {
-            "name": "_fbc"
-          },
-          {
-            "name": "fr"
-          }
-        ]
-      }
-    }
-  },
-  "language": {
-    "default": "en",
-    "translations": {
-      "en": {
-        "consentModal": {
-          "title": "We use cookies 🍪",
-          "description": "Gear up Pro uses cookies to enhance your experience, analyze site usage, and assist in our marketing efforts. You can manage your preferences anytime.",
-          "acceptAllBtn": "Accept All",
-          "acceptNecessaryBtn": "Accept Necessary",
-          "showPreferencesBtn": "Manage Preferences",
-          "footer": "<a href=\"#privacy-policy\">Privacy Policy</a> | <a href=\"#terms-conditions\">Terms & Conditions</a>"
-        },
-        "preferencesModal": {
-          "title": "Cookie Preferences",
-          "acceptAllBtn": "Accept All",
-          "acceptNecessaryBtn": "Accept Necessary",
-          "savePreferencesBtn": "Save Preferences",
-          "closeIconLabel": "Close",
-          "sections": [
-            {
-              "title": "Essential Cookies",
-              "description": "These cookies are necessary for the website to function and cannot be disabled.",
-              "linkedCategory": "necessary"
-            },
-            {
-              "title": "Analytics Cookies",
-              "description": "These cookies help us understand how visitors interact with our website.",
-              "linkedCategory": "analytics"
-            },
-            {
-              "title": "Marketing Cookies",
-              "description": "These cookies are used to deliver personalized advertisements.",
-              "linkedCategory": "marketing"
-            }
-          ]
-        }
-      }
-    }
-  },
-  "guiOptions": {
-    "consentModal": {
-      "layout": "box",
-      "position": "bottom right",
-      "equalWeightButtons": true,
-      "flipButtons": false
-    },
-    "preferencesModal": {
-      "layout": "box",
-      "equalWeightButtons": true,
-      "flipButtons": false
-    }
-  }
-});
-      
-      // Google Consent Mode v2 integration
-      // Update consent state based on accepted cookie categories
-      function updateGoogleConsentMode() {
-        if (typeof gtag !== 'function') {
-          // Define gtag if not already defined (needed for consent updates)
-          window.dataLayer = window.dataLayer || [];
-          window.gtag = function(){dataLayer.push(arguments);};
-        }
-        
-        var analyticsAccepted = cc.acceptedCategory('analytics');
-        var marketingAccepted = cc.acceptedCategory('marketing');
-        
-        gtag('consent', 'update', {
-          'analytics_storage': analyticsAccepted ? 'granted' : 'denied',
-          'ad_storage': marketingAccepted ? 'granted' : 'denied',
-          'ad_user_data': marketingAccepted ? 'granted' : 'denied',
-          'ad_personalization': marketingAccepted ? 'granted' : 'denied'
-        });
-      }
-      
-      // Update consent on initial load (if user previously accepted)
-      updateGoogleConsentMode();
-      
-      // Handle consent changes via onChange callback
-      if (typeof cc.onChange === 'function') {
-        cc.onChange(function(cookie, changed_preferences) {
-          updateGoogleConsentMode();
-        });
-      }
-
-      // Note: Cookie Preferences button removed per marketing guidelines
-      // Footer should be clean and minimal - users can manage cookies via banner
-    } catch (error) {
-    }
-  }
-
-  // Initialize when DOM is ready - multiple approaches for reliability
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCookieConsent);
-    // Backup timeout in case DOMContentLoaded doesn't fire
-    setTimeout(initCookieConsent, 1000);
-  } else if (document.readyState === 'interactive' || document.readyState === 'complete') {
-    initCookieConsent();
-  } else {
-    // Fallback - try after a short delay
-    setTimeout(initCookieConsent, 500);
-  }
-  
-  // Additional fallback - try after page load
-  if (typeof window !== 'undefined') {
-    if (window.addEventListener) {
-      window.addEventListener('load', initCookieConsent, { once: true });
-    }
-  }
-})();
-
-/* Accessibility Features */
-
-/* Mickidum Accessibility Toolbar Initialization - Zappy Style */
-
-window.onload = function() {
-    
-    try {
-        window.micAccessTool = new MicAccessTool({
-            buttonPosition: 'left', // Position on left side
-            forceLang: 'en-US', // Force language
-            icon: {
-                position: {
-                    bottom: { size: 50, units: 'px' },
-                    left: { size: 20, units: 'px' },
-                    type: 'fixed'
-                },
-                backgroundColor: 'transparent', // Transparent to allow CSS styling
-                color: 'transparent', // Let CSS handle coloring
-                img: 'accessible',
-                circular: false // Square button for consistent styling
-            },
-            menu: {
-                dimensions: {
-                    width: { size: 300, units: 'px' },
-                    height: { size: 'auto', units: 'px' }
-                }
-            }
-        });
-        
-    } catch (error) {
-    }
-    
-    // Keyboard shortcut handler: ALT+A (Option+A on Mac) to toggle accessibility widget visibility (desktop only)
-    document.addEventListener('keydown', function(event) {
-        // Check if ALT+A is pressed (ALT on Windows/Linux, Option on Mac)
-        var isAltOrOption = event.altKey;
-        // Use event.code for reliable physical key detection (works regardless of Option key character output)
-        var isAKey = event.code === 'KeyA' || event.keyCode === 65 || event.which === 65 || 
-                      (event.key && (event.key.toLowerCase() === 'a' || event.key === 'å' || event.key === 'Å'));
-        
-        if (isAltOrOption && isAKey) {
-            // Only work on desktop (screen width > 768px)
-            if (window.innerWidth > 768) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // Toggle visibility class on body
-                var isVisible = document.body.classList.contains('accessibility-widget-visible');
-                
-                if (isVisible) {
-                    // Hide the widget
-                    document.body.classList.remove('accessibility-widget-visible');
-                } else {
-                    // Show the widget
-                    document.body.classList.add('accessibility-widget-visible');
-                    
-                    // After a short delay, click the button to open the menu
-                    setTimeout(function() {
-                        var accessButton = document.getElementById('mic-access-tool-general-button');
-                        if (accessButton) {
-                            accessButton.click();
-                        }
-                    }, 200);
-                }
-            }
-        }
-    }, true);
-};
-
-
-// Zappy Contact Form API Integration (Fallback)
-(function() {
-    if (window.zappyContactFormLoaded) {
-        console.log('📧 Zappy contact form already loaded');
-        return;
-    }
-    window.zappyContactFormLoaded = true;
-
-    function zappyNotify(message, type) {
-        var existing = document.querySelectorAll('.zappy-notification');
-        existing.forEach(function(el) { el.remove(); });
-        var el = document.createElement('div');
-        el.className = 'zappy-notification';
-        var bg = type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1';
-        var fg = type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460';
-        var border = type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#bee5eb';
-        var icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-        el.style.cssText = 'position:fixed;top:20px;right:20px;max-width:400px;padding:16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:10000;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.4;animation:slideInRight .3s ease-out;background:' + bg + ';color:' + fg + ';border:1px solid ' + border;
-        el.innerHTML = '<span style="margin-right:8px">' + icon + '</span>' + message + '<button onclick="this.parentElement.remove()" style="background:none;border:none;font-size:18px;cursor:pointer;float:right;opacity:.7;padding:0 0 0 12px">&times;</button>';
-        if (!document.getElementById('zappy-notify-anim')) {
-            var s = document.createElement('style');
-            s.id = 'zappy-notify-anim';
-            s.textContent = '@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}';
-            document.head.appendChild(s);
-        }
-        document.body.appendChild(el);
-        setTimeout(function() { if (el.parentElement) el.remove(); }, type === 'error' ? 8000 : 5000);
-    }
-
-    function initContactFormIntegration() {
-        console.log('📧 Zappy: Initializing contact form API integration...');
-
-        var contactForm = document.querySelector('.contact-form') || 
-                           document.querySelector('form[action*="contact"]') ||
-                           document.querySelector('form#contact') ||
-                           document.querySelector('form#contactForm') ||
-                           document.getElementById('contactForm') ||
-                           document.querySelector('section.contact form') ||
-                           document.querySelector('section#contact form') ||
-                           document.querySelector('form');
-        
-        if (!contactForm) {
-            console.log('⚠️ Zappy: No contact form found on page');
-            return;
-        }
-        
-        console.log('✅ Zappy: Contact form found:', contactForm.className || contactForm.id || 'unnamed form');
-
-    contactForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        var formData = new FormData(this);
-        var data = Object.fromEntries(formData);
-
-        // Loading state
-        var submitBtn = this.querySelector('button[type="submit"], input[type="submit"]');
-        var originalText = submitBtn ? (submitBtn.value || submitBtn.textContent) : '';
-        if (submitBtn) {
-            if (submitBtn.tagName === 'INPUT') submitBtn.value = 'Sending...';
-            else submitBtn.textContent = 'Sending...';
-            submitBtn.disabled = true;
-        }
-
-        var currentPagePath = window.location.pathname;
-        if (window.ZAPPY_CONFIG && window.ZAPPY_CONFIG.currentPagePath) {
-            currentPagePath = window.ZAPPY_CONFIG.currentPagePath;
-        } else {
-            try {
-                var p = new URLSearchParams(window.location.search).get('page');
-                if (p) currentPagePath = p;
-            } catch (ignored) {}
-        }
-
-        var theForm = this;
-        try {
-            console.log('📧 Zappy: Sending contact form to backend API...');
-            var apiBase = (window.ZAPPY_API_BASE || 'https://api.zappy5.com').replace(/\/$/, '');
-            var response = await fetch(apiBase + '/api/email/contact-form', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    websiteId: 'fe3d25ec-4bf6-4de5-a543-19e608c968e5',
-                    name: data.name || '',
-                    email: data.email || '',
-                    subject: data.subject || 'Contact Form Submission',
-                    message: data.message || '',
-                    phone: data.phone || null,
-                    currentPagePath: currentPagePath
-                })
-            });
-
-            var result = await response.json();
-            
-            if (result.success) {
-                console.log('✅ Zappy: Contact form data sent successfully to backend');
-
-                // Thank-you page redirect
-                if (result.thankYouPagePath && result.ticketNumber) {
-                    var ticketParam = 'ticket=' + encodeURIComponent(result.ticketNumber);
-                    var isPreview = window.location.pathname.indexOf('/preview') !== -1;
-                    var thankYouUrl;
-                    if (isPreview && window.ZAPPY_CONFIG) {
-                        var wid = window.ZAPPY_CONFIG.websiteId || 'fe3d25ec-4bf6-4de5-a543-19e608c968e5';
-                        var pt = window.location.pathname.indexOf('fullscreen') !== -1 ? 'preview-fullscreen' : 'preview';
-                        thankYouUrl = window.location.origin + '/api/website/' + pt + '/' + wid + '?page=' + encodeURIComponent(result.thankYouPagePath) + '&' + ticketParam;
-                        if (window.ZAPPY_CONFIG.authToken) thankYouUrl += '&auth_token=' + encodeURIComponent(window.ZAPPY_CONFIG.authToken);
-                    } else {
-                        thankYouUrl = result.thankYouPagePath + '?' + ticketParam;
-                    }
-                    window.location.href = thankYouUrl;
-                    return;
-                }
-
-                zappyNotify(result.message || 'Thank you for your message! We\'ll get back to you soon.', 'success');
-                theForm.reset();
-            } else {
-                console.log('⚠️ Zappy: Backend returned error:', result.error);
-                zappyNotify(result.error || 'Failed to send message. Please try again.', 'error');
-            }
-        } catch (error) {
-            console.error('❌ Zappy: Failed to send to backend API:', error);
-            zappyNotify('Unable to send message right now. Please try again later.', 'error');
-        } finally {
-            if (submitBtn) {
-                if (submitBtn.tagName === 'INPUT') submitBtn.value = originalText;
-                else submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
-        }
-        }, true);
-
-        console.log('✅ Zappy: Contact form API integration initialized');
-    } // End of initContactFormIntegration
-    
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initContactFormIntegration);
-    } else {
-        initContactFormIntegration();
-    }
-})();
-
 
 /* ZAPPY_PUBLISHED_LIGHTBOX_RUNTIME */
 (function(){
@@ -7191,7 +7540,7 @@ window.onload = function() {
 
       var wid = 'fe3d25ec-4bf6-4de5-a543-19e608c968e5';
 
-      var apiBase = (window.ZAPPY_API_BASE || window.location.origin).replace(/\/$/,'');
+      var apiBase = (window.ZAPPY_API_BASE || 'https://api.zappy5.com').replace(/\/$/,'');
       apiBase = apiBase + '/api/email/contact-form';
 
       fetch(apiBase, {
